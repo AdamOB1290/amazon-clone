@@ -1,6 +1,6 @@
 export const initialState = {
     basket: [],
-    // user: null
+    user: null
   };
   
 //   Selector
@@ -43,11 +43,11 @@ export const initialState = {
           basket: newBasket
         }
       
-//       case "SET_USER":
-//         return {
-//           ...state,
-//           user: action.user
-//         }
+      case "SET_USER":
+        return {
+          ...state,
+          user: action.user
+        }
   
       default:
         return state;
