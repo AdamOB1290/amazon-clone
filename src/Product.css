@@ -39,3 +39,11 @@
   height: 100px;
   margin-bottom: 15px;
 }
+
+.star-rating-filled {
+  fill: gold;
+}
+
+.star-rating-blank {
+  fill: #d8d8d8;
+}

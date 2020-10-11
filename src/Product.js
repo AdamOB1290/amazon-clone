@@ -1,26 +1,70 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Product.css";
 import { useStateValue } from "./StateProvider";
-import StarIcon from "@material-ui/icons/Star";
-import StarBorderIcon from "@material-ui/icons/StarBorder";
 
-function Product({id, title, image, price, rating}) {
+const Star = ({starId, previousRating, rating, onMouseEnter, onMouseLeave, onClick }) => {
+  let styleClass = "star-rating-blank";
+  if ( rating >= starId) {
+    styleClass = "star-rating-filled";
+  }
 
-    const [{ basket }, dispatch] = useStateValue();
+  return (
+    <div
+      className={" star"}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+    >
+      <svg
+        id={'starSvg'+starId}
+        height="55px"
+        width="53px"
+        className={styleClass}
+        viewBox="0 0 25 23"
+        data-rating="1"
+      >
+        <polygon
+          stroke-width="0"
+          points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"
+        />
+      </svg>
+    </div>
+  );
+};
 
-    const addToBasket = () => {
-        // dispatch the item into the data layer
-        dispatch({
-          type: "ADD_TO_BASKET",
-          item: {
-            id: id,
-            title: title,
-            image: image,
-            price: price,
-            rating: rating,
-          },
-        });
-      };
+
+function Product({ id, title, image, price }) {
+  const [{ basket }, dispatch] = useStateValue();
+
+  const [rating, setRating] = useState(0);
+
+  const [previousRating, setPreviousRating] = useState(0);
+
+  const [hoverRating, setHoverRating] = useState(0);
+
+  const stars = [1,2,3,4,5];
+
+  const addToBasket = () => {
+    // dispatch the item into the data layer
+    dispatch({
+      type: "ADD_TO_BASKET",
+      item: {
+        id: id,
+        title: title,
+        image: image,
+        price: price,
+        rating: rating,
+      },
+    });
+  };
+
+  const storePreviousRating = (currentRating) => {
+      setPreviousRating(rating)
+      setRating(currentRating)
+      if (currentRating == rating) {
+        setRating(0)
+      }
+    };
 
   return (
     <div className="product">
@@ -31,18 +75,21 @@ function Product({id, title, image, price, rating}) {
           <strong>{price}</strong>
         </p>
         <div className="product__rating">
-            {Array(rating)
-                .fill()
-                .map((_, i) => (
-                <StarBorderIcon />
+          {stars.map((star, i) => (
+              <Star
+                key={i}
+                starId={i+1}
+                previousRating = {previousRating}
+                rating={hoverRating || rating}
+                onMouseEnter={() => setHoverRating(i+1)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => storePreviousRating(i+1)}
+              />
             ))}
         </div>
       </div>
 
-      <img
-        src={image}
-        alt=""
-      />
+      <img src={image} alt="" />
 
       <button onClick={addToBasket}>Add to Basket</button>
     </div>
