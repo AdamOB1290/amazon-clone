@@ -15,6 +15,8 @@ const firebaseConfig = {
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 const db = firebaseApp.firestore();
+// this is to avoid warnings
+// db.settings({timestampsInSnapshots: true});
 const auth = firebase.auth();
 
 export { db, auth };

@@ -1,40 +1,16 @@
 import React, { useState, useEffect } from "react";
 import "./Product.css";
 import { useStateValue } from "./StateProvider";
-
-const Star = ({starId, previousRating, rating, onMouseEnter, onMouseLeave, onClick }) => {
-  let styleClass = "star-rating-blank";
-  if ( rating >= starId) {
-    styleClass = "star-rating-filled";
-  }
-
-  return (
-    <div
-      className={" star"}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-    >
-      <svg
-        id={'starSvg'+starId}
-        height="55px"
-        width="53px"
-        className={styleClass}
-        viewBox="0 0 25 23"
-        data-rating="1"
-      >
-        <polygon
-          stroke-width="0"
-          points="9.9, 1.1, 3.3, 21.78, 19.8, 8.58, 0, 8.58, 16.5, 21.78"
-        />
-      </svg>
-    </div>
-  );
-};
+import { db } from "./firebase";
+import { getTotal } from "./reducer";
+import Star from "./Star";
 
 
-function Product({ id, title, image, price }) {
-  const [{ basket }, dispatch] = useStateValue();
+
+function Product({ docId, id, title, image, price }) {
+  const firebase = require("firebase");
+
+  const [{ basket, user }, dispatch] = useStateValue();
 
   const [rating, setRating] = useState(0);
 
@@ -42,7 +18,42 @@ function Product({ id, title, image, price }) {
 
   const [hoverRating, setHoverRating] = useState(0);
 
-  const stars = [1,2,3,4,5];
+  const [avgRating, setAvgRating] = useState(0);
+
+  const [productRatings, setProductRatings] = useState([]);
+
+  const stars = [1, 2, 3, 4, 5];
+
+  useEffect(() => {
+    
+    const updateRating = () => {
+      setProductRatings([])
+      db.collection("products")
+      .doc(docId)
+      .collection("rating")
+      // when cloud firestore sends a snapshot of the data, iterate through it's elements
+      .onSnapshot((snapshot) =>{
+        setProductRatings([])
+        snapshot.docs.forEach((doc) => {
+          
+          setProductRatings((productRatings) => [
+            ...productRatings,
+            doc.data().rating,
+          ]);
+        })
+      }
+      
+      );
+    };
+
+    updateRating();
+
+    // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
+    // thus avoiding an infinite loop
+  }, []);
+
+  let total =  getTotal(productRatings) / productRatings.length;
+  console.log(getTotal(productRatings), productRatings.length);
 
   const addToBasket = () => {
     // dispatch the item into the data layer
@@ -53,18 +64,31 @@ function Product({ id, title, image, price }) {
         title: title,
         image: image,
         price: price,
-        rating: rating,
+        rating:total,
       },
     });
   };
 
-  const storePreviousRating = (currentRating) => {
-      setPreviousRating(rating)
-      setRating(currentRating)
-      if (currentRating == rating) {
-        setRating(0)
-      }
-    };
+  const storeRating = (currentRating) => {
+    setRating(currentRating);
+    if (currentRating == rating) {
+      setRating(0);
+
+      db.collection("products")
+        .doc(docId)
+        .collection("rating")
+        .doc(user.uid)
+        .delete();
+    } else {
+      db.collection("products")
+        .doc(docId)
+        .collection("rating")
+        .doc(user.uid)
+        .set({
+          rating: currentRating,
+        });
+    }
+  };
 
   return (
     <div className="product">
@@ -76,16 +100,17 @@ function Product({ id, title, image, price }) {
         </p>
         <div className="product__rating">
           {stars.map((star, i) => (
-              <Star
-                key={i}
-                starId={i+1}
-                previousRating = {previousRating}
-                rating={hoverRating || rating}
-                onMouseEnter={() => setHoverRating(i+1)}
-                onMouseLeave={() => setHoverRating(0)}
-                onClick={() => storePreviousRating(i+1)}
-              />
-            ))}
+            <Star
+              key={i}
+              starId={i + 1}
+              previousRating={previousRating}
+              rating={hoverRating || total}
+              onMouseEnter={() => setHoverRating(i + 1)}
+              onMouseLeave={() => setHoverRating(0)}
+              onClick={() => storeRating(i + 1)}
+            />
+          ))}
+          <div>({productRatings.length})</div>
         </div>
       </div>
 

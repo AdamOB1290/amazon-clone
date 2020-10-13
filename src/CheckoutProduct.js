@@ -1,9 +1,11 @@
 import React from 'react';
 import './CheckoutProduct.css'
 import { useStateValue } from "./StateProvider";
+import Star from "./Star";
 
 function CheckoutProduct({ id, image, title, price, rating, hideButton }) {
     const [{ basket }, dispatch] = useStateValue();
+    const stars = [1, 2, 3, 4, 5];
 
     const removeFromBasket = () => {
         // remove the item from the basket
@@ -24,10 +26,12 @@ function CheckoutProduct({ id, image, title, price, rating, hideButton }) {
                     <strong>{price}</strong>
                 </p>
                 <div className="checkoutProduct__rating">
-                    {Array(rating)
-                    .fill()
-                    .map((_, i) => (
-                        <p>🌟</p>
+                    {stars.map((star, i) => (
+                        <Star
+                            key={i}
+                            starId={i + 1}
+                            rating={rating}
+                        />
                     ))}
                 </div>
                 {!hideButton && (
