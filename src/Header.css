@@ -1,7 +1,5 @@
 .header {
     height: 60px;
-    display: flex;
-    align-items: center;
     background-color: #131921;
     position: sticky;
     top: 0;
@@ -15,6 +13,11 @@
     margin-top: 18px;
 }
 
+.header__search__wrapper{
+    flex: 1;
+    max-width: 500px !important;
+}
+
 .header__search {
     display: flex;
     flex: 1;
@@ -23,16 +26,20 @@
 }
 
 .header__searchInput {
-    height: 12px;
-    padding: 10px;
+    height: 30px;
+    padding: 11px;
     border: none;
     width: 100%;
 }
 
 .header__searchIcon {
     padding:  5px;
-    height: 22px !important;
+    height: 30px !important;
     background-color:  #cd9042;
+}
+
+.header__search svg {
+    font-size: 2rem;
 }
 
 .header__optionLineOne {

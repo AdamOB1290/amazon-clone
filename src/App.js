@@ -12,6 +12,7 @@ import { useStateValue } from "./StateProvider";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Seeder } from "./Seeder";
+import ProductDetails from "./ProductDetails";
 
 const promise = loadStripe(
   "pk_test_51HaKtxLmKNc2Zf4wDfcQFoGnnnscwR9HqL0glyL8MntlsM8TOEd57huVdqfDibRWMacgpx93VegqTQQnyFko27QC00hzj4CV37"
@@ -32,7 +33,6 @@ function App() {
 
       if (authUser) {
         // the user just logged in / the user was logged in
-
         dispatch({
           type: "SET_USER",
           user: authUser,
@@ -44,35 +44,17 @@ function App() {
           user: null,
         });
       }
-      // db.collection('users').doc('J22cvNQ9i2Sf7Xbz3uIDgEZ2jaN2').collection('orders').get().then((snapshot) => {
-      //   console.log(snapshot.docs)
-      //   snapshot.docs.forEach(doc => {
-      //     console.log(doc.listCollections())
-      //   })
-      // })
-
-      // db
-      //   .collection('users')
-      //   .doc(user?.uid)
-      //   .collection('orders')
-      //   .orderBy('created', 'desc')
-      //   // when cloud firestore sends a snapshot of the data, iterate through it's elements
-      //   .onSnapshot(snapshot => (
-      //       // map the content of each element to the defined properties
-      //       setOrders(snapshot.docs.map(doc => ({
-      //           id: doc.id,
-      //           data: doc.data()
-      //       })))
-      //   ))
     });
-
-    
   }, []);
 
   return (
     <Router>
       <div className="app">
         <Switch>
+          <Route path="/product/:id">
+            <Header />
+            <ProductDetails />
+          </Route>
           <Route path="/orders">
             <Header />
             <Orders />

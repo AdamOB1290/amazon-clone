@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { Link, useHistory } from "react-router-dom";
 import "./Product.css";
 import { useStateValue } from "./StateProvider";
 import { db } from "./firebase";
-import { getTotal } from "./reducer";
+import { getStarTotal } from "./reducer";
 import Star from "./Star";
-
-
+import { Rating } from "@material-ui/lab";
+import Box from "@material-ui/core/Box";
 
 function Product({ docId, id, title, image, price }) {
-  const firebase = require("firebase");
 
-  const [{ basket, user }, dispatch] = useStateValue();
+  const history = useHistory();
+
+  const [{ user }, dispatch] = useStateValue();
 
   const [rating, setRating] = useState(0);
 
@@ -18,32 +20,26 @@ function Product({ docId, id, title, image, price }) {
 
   const [hoverRating, setHoverRating] = useState(0);
 
-  const [avgRating, setAvgRating] = useState(0);
-
   const [productRatings, setProductRatings] = useState([]);
 
   const stars = [1, 2, 3, 4, 5];
 
   useEffect(() => {
-    
     const updateRating = () => {
-      setProductRatings([])
+      setProductRatings([]);
       db.collection("products")
-      .doc(docId)
-      .collection("rating")
-      // when cloud firestore sends a snapshot of the data, iterate through it's elements
-      .onSnapshot((snapshot) =>{
-        setProductRatings([])
-        snapshot.docs.forEach((doc) => {
-          
-          setProductRatings((productRatings) => [
-            ...productRatings,
-            doc.data().rating,
-          ]);
-        })
-      }
-      
-      );
+        .doc(docId)
+        .collection("rating")
+        // when cloud firestore sends a snapshot of the data, iterate through it's elements
+        .onSnapshot((snapshot) => {
+          setProductRatings([]);
+          snapshot.docs.forEach((doc) => {
+            setProductRatings((productRatings) => [
+              ...productRatings,
+              doc.data().rating,
+            ]);
+          });
+        });
     };
 
     updateRating();
@@ -52,8 +48,8 @@ function Product({ docId, id, title, image, price }) {
     // thus avoiding an infinite loop
   }, []);
 
-  let total =  getTotal(productRatings) / productRatings.length;
-  console.log(getTotal(productRatings), productRatings.length);
+  let avgRating = getStarTotal(productRatings) / productRatings.length;
+  // console.log(getStarTotal(productRatings), productRatings.length);
 
   const addToBasket = () => {
     // dispatch the item into the data layer
@@ -64,9 +60,17 @@ function Product({ docId, id, title, image, price }) {
         title: title,
         image: image,
         price: price,
-        rating:total,
+        rating: avgRating,
       },
     });
+  };
+
+  const goToProduct = () => {
+    // console.log(docId, id, title, image, price);
+    history.push({
+      pathname: '/product/'+docId,
+      state: { docId, id, title, image, price }
+    })
   };
 
   const storeRating = (currentRating) => {
@@ -91,7 +95,7 @@ function Product({ docId, id, title, image, price }) {
   };
 
   return (
-    <div className="product">
+    <div className="product" onClick={goToProduct}>
       <div className="product__info">
         <p>{title}</p>
         <p className="product__price">
@@ -99,17 +103,14 @@ function Product({ docId, id, title, image, price }) {
           <strong>{price}</strong>
         </p>
         <div className="product__rating">
-          {stars.map((star, i) => (
-            <Star
-              key={i}
-              starId={i + 1}
-              previousRating={previousRating}
-              rating={hoverRating || total}
-              onMouseEnter={() => setHoverRating(i + 1)}
-              onMouseLeave={() => setHoverRating(0)}
-              onClick={() => storeRating(i + 1)}
+          <Box component="fieldset" mb={3} borderColor="transparent">
+            <Rating
+              name="half-rating-read"
+              value={avgRating}
+              precision={0.5}
+              readOnly
             />
-          ))}
+          </Box>
           <div>({productRatings.length})</div>
         </div>
       </div>
