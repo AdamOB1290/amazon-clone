@@ -1,3 +1,4 @@
+import { Description } from "@material-ui/icons";
 import { db, auth } from "./firebase";
 const faker = require('faker');
 
@@ -20,11 +21,13 @@ const faker = require('faker');
     productImages.forEach((productImage, i) => {
         const randomProductName = faker.commerce.productName();
         const randomProductPrice = faker.commerce.price();
+        const randomProductDescription = faker.commerce.productDescription();
         db.collection('products').add({
             id: i+1,
             title: randomProductName,
             price: randomProductPrice,
-            image: productImage
+            image: productImage, 
+            description:randomProductDescription
         })
     });
     

@@ -1,0 +1,13 @@
+.product__img__wrapper img {
+    object-fit: contain;
+}
+
+.btn_inner_shadow {
+    border-color: #a88734 #9c7e31 #846a29;
+    background: linear-gradient(to bottom,#ffd265,#d69c0b);
+    box-shadow: 0 0.1rem 0 rgba(255,255,255,.6) inset;
+}
+
+  
+
+

@@ -16,3 +16,17 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+.a-divider.a-divider-section .a-divider-inner {
+  height: 44px;
+  margin-bottom: -18px;
+  background: linear-gradient(to bottom,rgba(0,0,0,.14),rgba(0,0,0,.03) 3px,transparent);
+}
+
+.a-divider.a-divider-section .a-divider-inner:after {
+  display: block;
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(to right,#fff,rgba(255,255,255,0),#fff);
+  content: "";
+}

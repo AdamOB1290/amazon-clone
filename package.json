@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.11.0",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.56",
     "@stripe/react-stripe-js": "^1.1.2",
     "@stripe/stripe-js": "^1.9.0",
     "@testing-library/jest-dom": "^4.2.4",
@@ -17,12 +18,15 @@
     "react": "^16.13.1",
     "react-currency-format": "^1.0.0",
     "react-dom": "^16.13.1",
+    "react-magnifier": "^3.0.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.3"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "npm run watch:css && react-scripts start",
+    "build": "npm run build:css && react-scripts build",
+    "build:css": "postcss tailwind.css -o src/main.css",
+    "watch:css": "postcss tailwind.css -o src/main.css",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -40,5 +44,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.8.6",
+    "postcss-cli": "^8.1.0",
+    "tailwindcss": "^1.9.1"
   }
 }

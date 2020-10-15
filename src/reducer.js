@@ -8,12 +8,12 @@ export const getBasketTotal = (basket) =>
   //   reduce() iterates through the basket and adds up the total
   basket?.reduce((amount, item) => item.price + amount, 0);
 
-export const getTotal = (array) =>
+export const getStarTotal = (array) =>
   //   reduce() iterates through the basket and adds up the total
   array?.reduce((amount, item) => item + amount, 0);
 
 const reducer = (state, action) => {
-  console.log(action);
+  // console.log(action);
   switch (action.type) {
     case "ADD_TO_BASKET":
       return {
