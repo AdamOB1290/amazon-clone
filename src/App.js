@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Header from "./Header";
 import Home from "./Home";
@@ -13,14 +13,15 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { Seeder } from "./Seeder";
 import ProductDetails from "./ProductDetails";
+import { db } from "./firebase";
 
 const promise = loadStripe(
   "pk_test_51HaKtxLmKNc2Zf4wDfcQFoGnnnscwR9HqL0glyL8MntlsM8TOEd57huVdqfDibRWMacgpx93VegqTQQnyFko27QC00hzj4CV37"
 );
 
 function App() {
-
-  const [{ }, dispatch] = useStateValue();
+  // const [username, setUsername] = useState();
+  const [{}, dispatch] = useStateValue();
 
   useEffect(() => {
     // will only run once when the app component loads...
@@ -29,9 +30,19 @@ function App() {
     // Seeder()
 
     auth.onAuthStateChanged((authUser) => {
-      console.log("THE USER IS >>> ", authUser);
-
+      // console.log("THE USER IS >>> ", authUser);
       if (authUser) {
+        (async () => {
+          const doc = db.collection("users").doc(authUser?.uid);
+          const docReady = await doc.get();
+          if (!docReady.exists) {
+            console.log('No such document!');
+          } else {
+            // console.log('Document data:', docReady.data().username);
+            authUser.username = docReady.data().username
+          }
+      })();
+        
         // the user just logged in / the user was logged in
         dispatch({
           type: "SET_USER",
@@ -42,6 +53,10 @@ function App() {
         dispatch({
           type: "SET_USER",
           user: null,
+        });
+        dispatch({
+          type: "SET_USERNAME",
+          username: null,
         });
       }
     });

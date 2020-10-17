@@ -1,13 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Login.css";
 import { Link, useHistory } from "react-router-dom";
 import { auth } from "./firebase";
+import { db } from "./firebase";
+import { useStateValue } from "./StateProvider";
 
 function Login() {
   const history = useHistory();
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [hidden, setHidden] = useState(true);
+  const [{}, dispatch] = useStateValue();
 
+  useEffect(() => {}, [hidden, auth]);
+  
   const signIn = (e) => {
     e.preventDefault();
 
@@ -21,16 +28,24 @@ function Login() {
 
   const register = (e) => {
     e.preventDefault();
+    setUsername(username.replace(/\s/g, ""));
 
-    auth
-      .createUserWithEmailAndPassword(email, password)
-      .then((auth) => {
-        // it successfully created a new user with email and password
-        if (auth) {
-          history.push("/");
-        }
-      })
-      .catch((error) => alert(error.message));
+    if (username == "") {
+      setHidden(false);
+    } else {
+      auth
+        .createUserWithEmailAndPassword(email, password)
+        .then((auth) => {
+          db.collection("users").doc(auth.user.uid).set({
+            username: username,
+          });
+          // it successfully created a new user with email and password
+          if (auth) {
+            history.push("/");
+          }
+        })
+        .catch((error) => alert(error.message));
+    }
   };
 
   return (
@@ -56,10 +71,31 @@ function Login() {
             <input
               className="shadow appearance-none border border-gray-500 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
               id="email"
-              type="text"
+              type="email"
               placeholder="E-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className={`mb-4 ${hidden == true ? "hidden" : ""}`}>
+            <div className="flex justify-between items-center">
+              <label
+                className="block text-gray-700 text-sm font-bold mb-2"
+                for="email"
+              >
+                Username
+              </label>
+              <span className="text-red-600 text-right text-xs font-semibold">
+                Username is required to register
+              </span>
+            </div>
+            <input
+              className="shadow appearance-none border border-gray-500 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
+              id="email"
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           <div className="mb-6">

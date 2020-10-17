@@ -9,7 +9,6 @@ import { Rating } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 
 function Product({ docId, id, title, image, price }) {
-
   const history = useHistory();
 
   const [{ user }, dispatch] = useStateValue();
@@ -29,7 +28,7 @@ function Product({ docId, id, title, image, price }) {
       setProductRatings([]);
       db.collection("products")
         .doc(docId)
-        .collection("rating")
+        .collection("review_rating")
         // when cloud firestore sends a snapshot of the data, iterate through it's elements
         .onSnapshot((snapshot) => {
           setProductRatings([]);
@@ -68,36 +67,20 @@ function Product({ docId, id, title, image, price }) {
   const goToProduct = () => {
     // console.log(docId, id, title, image, price);
     history.push({
-      pathname: '/product/'+docId,
-      state: { docId, id, title, image, price }
-    })
-  };
-
-  const storeRating = (currentRating) => {
-    setRating(currentRating);
-    if (currentRating == rating) {
-      setRating(0);
-
-      db.collection("products")
-        .doc(docId)
-        .collection("rating")
-        .doc(user.uid)
-        .delete();
-    } else {
-      db.collection("products")
-        .doc(docId)
-        .collection("rating")
-        .doc(user.uid)
-        .set({
-          rating: currentRating,
-        });
-    }
+      pathname: "/product/" + docId,
+      state: { docId, id, title, image, price },
+    });
   };
 
   return (
-    <div className="product" onClick={goToProduct}>
+    <div className="product">
       <div className="product__info">
-        <p>{title}</p>
+        <p
+          className="cursor-pointer hover:text-orange-600"
+          onClick={goToProduct}
+        >
+          {title}
+        </p>
         <p className="product__price">
           <small>$</small>
           <strong>{price}</strong>
@@ -115,7 +98,12 @@ function Product({ docId, id, title, image, price }) {
         </div>
       </div>
 
-      <img src={image} alt="" />
+      <img
+        className="cursor-pointer"
+        onClick={goToProduct}
+        src={image}
+        alt=""
+      />
 
       <button onClick={addToBasket}>Add to Basket</button>
     </div>
