@@ -1,3 +1,6 @@
+:focus{
+    outline: none !important;
+}
 .product__img__wrapper img {
     object-fit: contain;
 }
