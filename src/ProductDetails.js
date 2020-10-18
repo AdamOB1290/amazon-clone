@@ -4,14 +4,12 @@ import RatingBar from "./RatingBar";
 import { useStateValue } from "./StateProvider";
 import { db } from "./firebase";
 import { getStarTotal } from "./reducer";
-import Star from "./Star";
 import { useLocation } from "react-router-dom";
 import Magnifier from "react-magnifier";
 import { Rating } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
-import moment from "moment";
-import Dropdown from "react-bootstrap/Dropdown";
-import "bootstrap/dist/css/bootstrap.min.css";
+import Reviews from "./Reviews";
+import Tooltip from "@material-ui/core/Tooltip";
 
 const faker = require("faker");
 
@@ -30,48 +28,30 @@ function ProductDetails() {
 
   const [productRatings, setProductRatings] = useState([]);
 
-  const [userRating, setUserRating] = useState(null);
+  const [userRating, setUserRating] = useState(0);
 
   const [review, setReview] = useState("");
 
-  const [reviews, setReviews] = useState([]);
+  const [validationError, setValidationError] = useState(false);
 
   const avgRating = useRef(null);
 
-  const [dropdownValue, setDropdownValue] = useState("");
+  const [starHover, setStarHover] = useState(-1);
 
-  const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
-    <i
-      className="fas fa-ellipsis-h absolute top-0 right-0 cursor-pointer"
-      onClick={(e) => {
-        e.preventDefault();
-        onClick(e);
-      }}
-    >
-      {children}
-    </i>
-  ));
+  const [reviewed, setReviewed] = useState(true);
 
-  const CustomMenu = React.forwardRef(
-    ({ children, style, className, "aria-labelledby": labeledBy }, ref) => {
-      return (
-        <div
-          ref={ref}
-          style={style}
-          className={className}
-          aria-labelledby={labeledBy}
-        >
-          <ul className="list-unstyled">
-            {React.Children.toArray(children).filter(
-              (child) =>
-                !dropdownValue ||
-                child.props.children.toLowerCase().startsWith(dropdownValue)
-            )}
-          </ul>
-        </div>
-      );
-    }
-  );
+  const starLabels = {
+    0.5: 0.5 + " ★",
+    1: 1 + " ★",
+    1.5: 1.5 + " ★",
+    2: 2 + " ★",
+    2.5: 2.5 + " ★",
+    3: 3 + " ★",
+    3.5: 3.5 + " ★",
+    4: 4 + " ★",
+    4.5: 4.5 + " ★",
+    5: 5 + " ★",
+  };
 
   useEffect(() => {
     db.collection("products")
@@ -79,21 +59,6 @@ function ProductDetails() {
       .doc(productId)
       .onSnapshot((snapshot) => {
         setProduct(snapshot.data());
-      });
-
-    db.collection("products")
-      .doc(productId)
-      .collection("review_rating")
-      .onSnapshot((snapshot) => {
-        setReviews(
-          snapshot.docs.map((doc) => ({
-            id: doc.id,
-            username: doc.data().username,
-            review: doc.data().review,
-            rating: doc.data().rating,
-            created_at: doc.data().created_at.toDate().toDateString(),
-          }))
-        );
       });
 
     const updateRating = () => {
@@ -191,19 +156,38 @@ function ProductDetails() {
     fiveStarsPct = (fiveStars / totalStars) * 100;
   };
 
+  const addToBasket = () => {
+    // dispatch the item into the data layer
+    dispatch({
+      type: "ADD_TO_BASKET",
+      item: {
+        id: product?.id,
+        title: product?.title,
+        image: product?.image,
+        price: product?.price,
+        rating: avgRating,
+      },
+    });
+  };
+
   const addReview = (e) => {
     e.preventDefault();
-    db.collection("products")
-      .doc(productId)
-      .collection("review_rating")
-      .doc(user.uid)
-      .update({
-        username: user.username,
-        review: review,
-        created_at: firebase.firestore.FieldValue.serverTimestamp(),
-      });
+    if (!review == "" || !review == null) {
+      db.collection("products")
+        .doc(productId)
+        .collection("review_rating")
+        .doc(user.uid)
+        .update({
+          username: user.username,
+          review: review,
+          created_at: firebase.firestore.FieldValue.serverTimestamp(),
+        });
 
-    setReview("");
+      setReview("");
+      setReviewed(true);
+    } else {
+      setValidationError(true);
+    }
   };
 
   sortRating(productRatings);
@@ -212,48 +196,80 @@ function ProductDetails() {
     <div>
       <div className="max-w-10/12 product__wrapper bg-white w-content p-10 flex justify-center mx-auto">
         <div className="product__img__wrapper w-4/12 flex flex-col items-center">
-          <Magnifier src={rootUrl + product.image} />
+          <Magnifier src={rootUrl + product?.image} />
           <hr />
-          <p className="mt-4 text-center text-lg ">Rate this product :</p>
-          <Box component="fieldset" mb={3} borderColor="transparent">
-            <Rating
-              name="simple-controlled"
-              size="large"
-              value={userRating}
-              precision={0.5}
-              onChange={(event, newValue) => {
-                setUserRating(newValue);
-                db.collection("products")
-                  .doc(productId)
-                  .collection("review_rating")
-                  .doc(user?.uid)
-                  .update({
-                    rating: newValue,
-                  });
-              }}
-            />
+          <Box
+            component="fieldset"
+            width={0.9}
+            mt={6}
+            my={2}
+            py={3}
+            borderColor="transparent"
+            boxShadow={1}
+            className="flex flex-col justify-center items-center"
+          >
+            <p className="text-center text-lg underline mb-1">
+              Rate this product :
+            </p>
+            <Tooltip
+              title={starLabels[starHover != -1 ? starHover : userRating]}
+              placement="left"
+              arrow
+            >
+              <Rating
+                name="simple-controlled"
+                size="large"
+                value={userRating}
+                precision={0.5}
+                onChange={(event, newValue) => {
+                  setUserRating(newValue);
+                  db.collection("products")
+                    .doc(productId)
+                    .collection("review_rating")
+                    .doc(user?.uid)
+                    .update({
+                      rating: newValue,
+                    });
+                }}
+                onChangeActive={(event, newHover) => {
+                  setStarHover(newHover);
+                }}
+              />
+            </Tooltip>
           </Box>
         </div>
         <div className="product__detail__wrapper w-8/12">
-          <h1 className=" text-4xl mb-3">{product.title}</h1>
-          <div className="product__rating mb-3">
-            <span>avg :</span>
-            <Box component="fieldset" mb={3} borderColor="transparent">
-              <Rating
-                name="half-rating-read"
-                value={avgRating.current}
-                precision={0.5}
-                size="large"
-                readOnly
-              />
-            </Box>
+          <h1 className=" text-4xl mb-3">{product?.title}</h1>
+          <p className="mb-2">
+            Marque: XIAOMI |{" "}
+            <span className="hover:underline hover:text-orange-600 cursor-pointer">
+              Similar products from XIAOMI
+            </span>
+          </p>
+          <div className="product__rating">
+            <Tooltip
+              title={"average rating: " + avgRating.current + " ★"}
+              placement="top"
+              arrow
+              interactive
+            >
+              <Box component="fieldset" mb={1} borderColor="transparent">
+                <Rating
+                  name="half-rating-read"
+                  value={avgRating.current}
+                  precision={0.5}
+                  size="large"
+                  readOnly
+                />
+              </Box>
+            </Tooltip>
           </div>
           <hr />
           <p className="product__price text-2xl mb-5">
             <small>$</small>
-            <strong>{product.price}</strong>
+            <strong>{product?.price}</strong>
           </p>
-          <button className="w-full mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded btn_inner_shadow border border-black">
+          <button onClick={addToBasket} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded btn_inner_shadow border border-black">
             Add To Basket
           </button>
           <div className="mt-8">
@@ -321,76 +337,40 @@ function ProductDetails() {
             </div>
           </div>
           <div className="ratings flex flex-col w-full ml-20">
-            <form
-              onSubmit={addReview}
-              className="textArea__wrapper flex flex-col items-center mb-10"
-            >
-              <h2 className="font-normal mb-5 text-2xl">
-                Write your own review
-              </h2>
-
-              <textarea
-                name="review"
-                className="resize-none border border-gray-500 rounded focus:outline-none focus:shadow-outline w-7/12 mb-4"
-                rows="5"
-                value={review}
-                onChange={(e) => setReview(e.target.value)}
-              ></textarea>
-              <button
-                type="submit"
-                className="bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-10 rounded btn_inner_shadow border border-black"
+            {!reviewed ? (
+              <form
+                onSubmit={addReview}
+                className="textArea__wrapper flex flex-col items-center mb-10"
               >
-                Submit
-              </button>
-            </form>
-            <h1 className="font-semibold text-2xl mb-5">Reviews</h1>
-            <div className=" w-full">
-              {reviews?.map((user, i) => (
-                <div className="w-full" key={i}>
-                  <div className=" w-full flex relative justify-between">
-                    <div className="mr-2 font-bold">{user.username}</div>
-                    <Box component="fieldset" borderColor="transparent">
-                      <Rating
-                        name="half-rating-read"
-                        value={user.rating}
-                        precision={0.5}
-                        readOnly
-                      />
-                    </Box>
-                    <Dropdown className="bg-red-900">
-                      <Dropdown.Toggle
-                        as={CustomToggle}
-                        id="dropdown-custom-components"
-                      ></Dropdown.Toggle>
-
-                      <Dropdown.Menu as={CustomMenu}>
-                        <Dropdown.Item eventKey="1" active>
-                          Edit
-                        </Dropdown.Item>
-                        <Dropdown.Item eventKey="2">Delete</Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                    <Dropdown>
-                      <Dropdown.Toggle
-                        as={CustomToggle}
-                        id="dropdown-custom-components"
-                      ></Dropdown.Toggle>
-
-                      <Dropdown.Menu>
-                        <Dropdown.Item>Edit</Dropdown.Item>
-                        <Dropdown.Item>Delete</Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </div>
-                  <div className="mb-5 break-all">
-                    <span>{user.review}</span>
-                  </div>
-                  <span className="text-gray-600 text-sm font-hairline">
-                    {moment(user.created_at).fromNow()}
+                <h2 className="font-normal mb-5 text-2xl">
+                  Write your own review
+                </h2>
+                <textarea
+                  name="review"
+                  className="resize-none border border-gray-500 rounded focus:outline-none focus:shadow-outline w-7/12 mb-2 p-4"
+                  rows="5"
+                  value={review}
+                  onChange={(e) => setReview(e.target.value)}
+                ></textarea>
+                {validationError ? (
+                  <span className="text-red-600 text-sm font-semibold mb-2">
+                    Please write your review before you submit it !
                   </span>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  ""
+                )}
+                <button
+                  type="submit"
+                  className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-10 rounded btn_inner_shadow border border-black"
+                >
+                  Submit
+                </button>
+              </form>
+            ) : (
+              ""
+            )}
+
+            <Reviews reviewed={reviewed} setReviewed={setReviewed} setReview={setReview} productId={productId} />
           </div>
         </div>
       </div>
