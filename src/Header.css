@@ -75,10 +75,15 @@
     color: white;
 }
 
-.search__results{
-    position: absolute;
-    bottom: -101px;
-    height: 100px;
-    width: 100%;
-    background-color: White;
+.product_search_list{
+    left: 16px !important;
+
+}
+
+#menu-list-container{
+    width: 500px;
+    border-radius: 0;
+    overflow: scroll;
+    border-top: 1px solid rgba(0, 0, 0, 0.322);
+
 }
