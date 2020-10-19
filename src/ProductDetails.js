@@ -54,18 +54,12 @@ function ProductDetails() {
   };
 
   useEffect(() => {
-    db.collection("products")
-      // get the specific product
-      .doc(productId)
-      .onSnapshot((snapshot) => {
-        setProduct(snapshot.data());
-      });
 
-    const updateRating = () => {
+    const updateRating = (productIdParam) => {
       setProductRatings([]);
       db.collection("products")
         // get the specific product
-        .doc(productId)
+        .doc(productIdParam)
         .collection("review_rating")
         // when cloud firestore sends a snapshot of the data, iterate through it's elements
         .onSnapshot((snapshot) => {
@@ -85,14 +79,30 @@ function ProductDetails() {
             }
           });
         });
-    };
+      };
+      
+        db.collection("products")
+        // get the specific product
+        .doc(productId)
+        .onSnapshot((snapshot) => {
+          setProduct(snapshot.data());
+        });
+        
+        updateRating(productId);
+        
+        // console.log(location?.state?.productRatings);
 
-    updateRating();
-
+      if (location?.state?.productRatings != undefined) {
+        setProductRatings(location?.state?.productRatings)
+      } 
     // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
     // thus avoiding an infinite loop
   }, [user]);
+  // console.log(location?.state);
+
+  // console.log(productRatings);
   avgRating.current = getStarTotal(productRatings) / productRatings.length;
+  
   if (isNaN(avgRating.current)) {
     avgRating.current = 0;
   }
@@ -196,7 +206,13 @@ function ProductDetails() {
     <div>
       <div className="max-w-10/12 product__wrapper bg-white w-content p-10 flex justify-center mx-auto">
         <div className="product__img__wrapper w-4/12 flex flex-col items-center">
-          <Magnifier src={rootUrl + product?.image} />
+          <Magnifier
+            src={
+              location?.state?.image
+                ? rootUrl + location?.state?.image
+                : rootUrl + product?.image
+            }
+          />
           <hr />
           <Box
             component="fieldset"
@@ -239,7 +255,9 @@ function ProductDetails() {
           </Box>
         </div>
         <div className="product__detail__wrapper w-8/12">
-          <h1 className=" text-4xl mb-3">{product?.title}</h1>
+          <h1 className=" text-4xl mb-3">
+            {location?.state?.title ? location?.state?.title : product?.title}
+          </h1>
           <p className="mb-2">
             Marque: XIAOMI |{" "}
             <span className="hover:underline hover:text-orange-600 cursor-pointer">
@@ -267,18 +285,22 @@ function ProductDetails() {
           <hr />
           <p className="product__price text-2xl mb-5">
             <small>$</small>
-            <strong>{product?.price}</strong>
+            <strong>
+              {location?.state?.price ? location?.state?.price : product?.price}
+            </strong>
           </p>
-          <button onClick={addToBasket} className="w-full mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded btn_inner_shadow border border-black">
+          <button
+            onClick={addToBasket}
+            className="w-full mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded btn_inner_shadow border border-black"
+          >
             Add To Basket
           </button>
           <div className="mt-8">
             <h1 className="text-xl">Description:</h1>
             <span className="break-all">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odio
-              officiis enim, atque accusamus debitis et ea commodi recusandae
-              minus modi deleniti. Numquam recusandae asperiores unde doloremque
-              excepturi velit odio a provident accusantium quae. Ad, nihil.{" "}
+              {location?.state?.description
+                ? location?.state?.description
+                : product?.description}
             </span>
           </div>
         </div>
@@ -370,7 +392,12 @@ function ProductDetails() {
               ""
             )}
 
-            <Reviews reviewed={reviewed} setReviewed={setReviewed} setReview={setReview} productId={productId} />
+            <Reviews
+              reviewed={reviewed}
+              setReviewed={setReviewed}
+              setReview={setReview}
+              productId={productId}
+            />
           </div>
         </div>
       </div>
