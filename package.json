@@ -21,7 +21,10 @@
     "react-highlighter": "^0.4.3",
     "react-magnifier": "^3.0.4",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "3.4.3"
+    "react-scripts": "3.4.3",
+    "react-slick": "^0.27.12",
+    "slick-carousel": "^1.8.1",
+    "unsplash-js": "^6.3.0"
   },
   "scripts": {
     "start": "npm run watch:css && react-scripts start",

@@ -65,7 +65,7 @@ function Product({ docId, id, title, image, price }) {
   };
 
   const goToProduct = () => {
-    // console.log(docId, id, title, image, price);
+    console.log(docId, id, title, image, price);
     history.push({
       pathname: "/product/" + docId,
       state: { docId, id, title, image, price },

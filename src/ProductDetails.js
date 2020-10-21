@@ -54,58 +54,46 @@ function ProductDetails() {
   };
 
   useEffect(() => {
+    db.collection("products")
+      // get the specific product
+      .doc(productId)
+      .onSnapshot((snapshot) => {
+        setProduct(snapshot.data());
+      });
 
-    const updateRating = (productIdParam) => {
-      setProductRatings([]);
-      db.collection("products")
-        // get the specific product
-        .doc(productIdParam)
-        .collection("review_rating")
-        // when cloud firestore sends a snapshot of the data, iterate through it's elements
-        .onSnapshot((snapshot) => {
-          // reset the array
-          setProductRatings([]);
-          //   loop over each user who rated the product
-          snapshot.docs.forEach((doc) => {
-            //   add all the ratings to the array
-            setProductRatings((productRatings) => [
-              ...productRatings,
-              doc.data().rating,
-            ]);
-            // if we find the user rating of the session user
-            if (doc.id == user?.uid) {
-              // add his rating to the variable
-              setUserRating(doc.data().rating);
-            }
-          });
-        });
-      };
-      
-        db.collection("products")
-        // get the specific product
-        .doc(productId)
-        .onSnapshot((snapshot) => {
-          setProduct(snapshot.data());
-        });
-        
-        updateRating(productId);
-        
-        // console.log(location?.state?.productRatings);
-
-      if (location?.state?.productRatings != undefined) {
-        setProductRatings(location?.state?.productRatings)
-      } 
+    updateRating(productId);
+    if (
+      location?.state?.productRatings != undefined &&
+      location?.state?.productRatings != ""
+    ) {
+      setProductRatings(location?.state?.productRatings);
+    }
     // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
     // thus avoiding an infinite loop
-  }, [user]);
-  // console.log(location?.state);
+  }, [user, productId]);
 
-  // console.log(productRatings);
-  avgRating.current = getStarTotal(productRatings) / productRatings.length;
-  
+  if (location?.state?.docId && location?.state?.docId != productId) {
+    setProductId(location?.state?.docId);
+  }
+
+  const pushAvgRating = (productIdParam, avgRating) => {
+    db.collection("products")
+      // get the specific product
+      .doc(productIdParam)
+      .update({
+        avgRating: avgRating,
+      });
+  };
+  if (productRatings) {
+    avgRating.current = getStarTotal(productRatings) / productRatings.length;
+  }
+
   if (isNaN(avgRating.current)) {
     avgRating.current = 0;
   }
+
+  pushAvgRating(productId, avgRating.current);
+
   let oneStarPct = 0;
   let twoStarsPct = 0;
   let threeStarsPct = 0;
@@ -180,6 +168,32 @@ function ProductDetails() {
     });
   };
 
+  const updateRating = (productIdParam) => {
+    setProductRatings([]);
+    db.collection("products")
+      // get the specific product
+      .doc(productIdParam)
+      .collection("review_rating")
+      // when cloud firestore sends a snapshot of the data, iterate through it's elements
+      .onSnapshot((snapshot) => {
+        // reset the array
+        setProductRatings([]);
+        //   loop over each user who rated the product
+        snapshot.docs.forEach((doc) => {
+          //   add all the ratings to the array
+          setProductRatings((productRatings) => [
+            ...productRatings,
+            doc.data().rating,
+          ]);
+          // if we find the user rating of the session user
+          if (doc.id == user?.uid) {
+            // add his rating to the variable
+            setUserRating(doc.data().rating);
+          }
+        });
+      });
+  };
+
   const addReview = (e) => {
     e.preventDefault();
     if (!review == "" || !review == null) {
@@ -200,8 +214,12 @@ function ProductDetails() {
     }
   };
 
-  sortRating(productRatings);
-
+  if (location?.state?.productRatings) {
+    sortRating(location?.state?.productRatings);
+  } else if (productRatings) {
+    sortRating(productRatings);
+  }
+  // console.log('location?.state?.rating : '+location?.state?.rating, 'userRating : '+userRating, 'productId : '+productId);
   return (
     <div>
       <div className="max-w-10/12 product__wrapper bg-white w-content p-10 flex justify-center mx-auto">
@@ -209,8 +227,8 @@ function ProductDetails() {
           <Magnifier
             src={
               location?.state?.image
-                ? rootUrl + location?.state?.image
-                : rootUrl + product?.image
+                ? location?.state?.image
+                : product?.image
             }
           />
           <hr />
@@ -235,7 +253,9 @@ function ProductDetails() {
               <Rating
                 name="simple-controlled"
                 size="large"
-                value={userRating}
+                value={
+                  location?.state?.rating !=undefined ? location?.state?.rating : userRating
+                }
                 precision={0.5}
                 onChange={(event, newValue) => {
                   setUserRating(newValue);
@@ -243,9 +263,14 @@ function ProductDetails() {
                     .doc(productId)
                     .collection("review_rating")
                     .doc(user?.uid)
-                    .update({
-                      rating: newValue,
-                    });
+                    .set(
+                      {
+                        rating: newValue,
+                      },
+                      {
+                        merge: true,
+                      }
+                    );
                 }}
                 onChangeActive={(event, newHover) => {
                   setStarHover(newHover);
@@ -266,7 +291,11 @@ function ProductDetails() {
           </p>
           <div className="product__rating">
             <Tooltip
-              title={"average rating: " + avgRating.current + " ★"}
+              title={
+                location?.state?.avgRating
+                  ? "average rating: " + location?.state?.avgRating + " ★"
+                  : "average rating: " + avgRating.current + " ★"
+              }
               placement="top"
               arrow
               interactive
@@ -274,7 +303,11 @@ function ProductDetails() {
               <Box component="fieldset" mb={1} borderColor="transparent">
                 <Rating
                   name="half-rating-read"
-                  value={avgRating.current}
+                  value={
+                    location?.state?.avgRating
+                      ? location?.state?.avgRating
+                      : avgRating.current
+                  }
                   precision={0.5}
                   size="large"
                   readOnly
@@ -316,22 +349,41 @@ function ProductDetails() {
         <div className="body__reviews flex px-20 mt-5">
           <div className="ratings">
             <h1 className="text-lg font-semibold ">
-              Ratings <span className="text-sm">({productRatings.length})</span>
+              Ratings{" "}
+              <span className="text-sm">
+                (
+                {location?.state?.productRatings
+                  ? location?.state?.productRatings.length
+                  : productRatings.length}
+                )
+              </span>
             </h1>
             <div className="rating__breakdown__wrapper ">
               <div className="rating__block my-5 flex flex-col items-center justify-center bg-gray-300 bg-opacity-50 p-10">
                 <span className="text-orange-400 font-semibold text-xl">
-                  {avgRating.current}/5
+                  {location?.state?.avgRating
+                    ? location?.state?.avgRating
+                    : avgRating.current}
+                  /5
                 </span>
                 <Box component="fieldset" mb={3} borderColor="transparent">
                   <Rating
                     name="half-rating-read"
-                    value={avgRating.current}
+                    value={
+                      location?.state?.avgRating
+                        ? location?.state?.avgRating
+                        : avgRating.current
+                    }
                     precision={0.5}
                     readOnly
                   />
                 </Box>
-                <span>{productRatings.length} review</span>
+                <span>
+                  {location?.state?.productRatings
+                    ? location?.state?.productRatings.length
+                    : productRatings.length}{" "}
+                  review(s)
+                </span>
               </div>
               <ul className="rating__breakdown mb-5">
                 <RatingBar
@@ -391,7 +443,6 @@ function ProductDetails() {
             ) : (
               ""
             )}
-
             <Reviews
               reviewed={reviewed}
               setReviewed={setReviewed}

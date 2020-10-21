@@ -23,8 +23,8 @@ function App() {
   // const [username, setUsername] = useState();
   const [{}, dispatch] = useStateValue();
 
+  // will only run once when the app component loads...
   useEffect(() => {
-    // will only run once when the app component loads...
 
     // uncomment to seed products:
     // Seeder()

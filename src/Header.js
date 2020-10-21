@@ -34,12 +34,14 @@ function Header() {
   const [{ basket, user }, dispatch] = useStateValue();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState([]);
+  const [typedProduct, setTypedProduct] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
   const options = useRef([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const ITEM_HEIGHT = 48;
   const [productRatings, setProductRatings] = useState([]);
-
+  // const [userRating, setUserRating] = useState(0);
+  const userRating = useRef(0);
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState("");
@@ -57,6 +59,28 @@ function Header() {
   const prevOpen = useRef(open);
 
   useEffect(() => {
+    if (selectedProduct) {
+      db.collection("products")
+        // get the specific product
+        .doc(selectedProduct?.id)
+        .collection("review_rating")
+        // when cloud firestore sends a snapshot of the data, iterate through it's elements
+        .onSnapshot((snapshot) => {
+          //   loop over each user who rated the product
+          snapshot.docs.forEach((doc) => {
+            //   add all the ratings to the array
+            setProductRatings((productRatings) => [
+              ...productRatings,
+              doc.data().rating,
+            ]);
+            if (doc.id == user?.uid) {
+              // add his rating to the variable
+              // setUserRating(doc.data().rating);
+              userRating.current = doc.data().rating;
+            }
+          });
+        });
+    }
     db.collection("products")
       .orderBy("id", "asc")
       // when cloud firestore sends a snapshot of the data, iterate through it's elements
@@ -99,42 +123,38 @@ function Header() {
     }
   };
   const sendToSeachBar = (product) => {
-    console.log(product);
+    setTypedProduct(product);
     setSelectedProduct(product);
     setOpen(false);
   };
 
   const goToProduct = () => {
-    // console.log(selectedProduct.id);
-    db.collection("products")
-      // get the specific product
-      .doc(selectedProduct.id)
-      .collection("review_rating")
-      // when cloud firestore sends a snapshot of the data, iterate through it's elements
-      .onSnapshot((snapshot) => {
-        // reset the array
-        setProductRatings([]);
-        //   loop over each user who rated the product
-        snapshot.docs.forEach((doc) => {
-          console.log('rating is:'+ doc.data().rating);
-          //   add all the ratings to the array
-          setProductRatings((productRatings) => [
-            ...productRatings,
-            doc.data().rating,
-          ]);
-        });
+    if (selectedProduct) {
+      const docId = selectedProduct.id;
+      const id = selectedProduct.data.id;
+      const title = selectedProduct.data.title;
+      const image = selectedProduct.data.image;
+      const price = selectedProduct.data.price;
+      const rating = userRating.current;
+      const avgRating = selectedProduct.data.avgRating;
+      // console.log(docId, id, title, image, price, avgRating, rating, productRatings);
+      history.push({
+        pathname: "/product/" + docId,
+        state: {
+          docId,
+          id,
+          title,
+          image,
+          price,
+          avgRating,
+          rating,
+          productRatings,
+        },
       });
-
-    const docId = selectedProduct.id;
-    const id = selectedProduct.data.id;
-    const title = selectedProduct.data.title;
-    const image = selectedProduct.data.image;
-    const price = selectedProduct.data.price;
-    // console.log(docId, id, title, image, price, productRatings);
-    history.push({
-      pathname: "/product/" + docId,
-      state: { docId, id, title, image, price, productRatings },
-    });
+      setSelectedProduct("");
+      userRating.current = 0;
+      setProductRatings([]);
+    }
   };
   return (
     <div className="header flex justify-between items-center w-full">
@@ -151,8 +171,8 @@ function Header() {
             ref={anchorRef}
             aria-controls={open ? "menu-list-grow" : undefined}
             aria-haspopup="true"
-            onChange={(e) => setSelectedProduct(e.target.value)}
-            value={selectedProduct?.data?.title}
+            onChange={(e) => setTypedProduct(e.target.value)}
+            value={typedProduct?.data?.title }
           />
           <SearchIcon onClick={goToProduct} className="header__searchIcon" />
           <Popper
@@ -175,7 +195,7 @@ function Header() {
                     <MenuItem onClick={() => sendToSeachBar(product)} key={i}>
                       <img
                         className="h-10 w-10"
-                        src={rootUrl + product?.data.image}
+                        src={product?.data.image}
                         alt=""
                       />
                       <Highlight matchElement="strong" search={highlighted}>
