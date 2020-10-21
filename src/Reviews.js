@@ -45,12 +45,12 @@ export default function Reviews({ setReviewed, setReview, productId }) {
           }
         });
       });
-  }, []);
+  }, [productId]);
 
   if (!editClicked) {
     if (reviews.length > 0) {
       reviews.forEach((review) => {
-        if (review.id == user.uid) {
+        if (review.id == user?.uid) {
           setReviewed(true);
         }
       });

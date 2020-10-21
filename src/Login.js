@@ -64,7 +64,7 @@ function Login() {
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              for="email"
+              htmlFor="email"
             >
               E-mail
             </label>
@@ -81,7 +81,7 @@ function Login() {
             <div className="flex justify-between items-center">
               <label
                 className="block text-gray-700 text-sm font-bold mb-2"
-                for="email"
+                htmlFor="email"
               >
                 Username
               </label>
@@ -101,7 +101,7 @@ function Login() {
           <div className="mb-6">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              for="password"
+              htmlFor="password"
             >
               Password
             </label>
