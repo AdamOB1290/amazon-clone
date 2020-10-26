@@ -16,7 +16,7 @@ import ProductDetails from "./ProductDetails";
 import { db } from "./firebase";
 
 const promise = loadStripe(
-  "pk_test_51HaKtxLmKNc2Zf4wDfcQFoGnnnscwR9HqL0glyL8MntlsM8TOEd57huVdqfDibRWMacgpx93VegqTQQnyFko27QC00hzj4CV37"
+  "pk_test_51HgVYiAIBAA5hYYSSH3LfZiqhJBPyhGCSuPemKQMRk2zPyUDJsGvZ3BAUIwv6wYmu8bnMp4yjAxPzyfanX4sHQbv009oXf5SmV"
 );
 
 function App() {
