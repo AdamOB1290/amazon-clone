@@ -6,7 +6,7 @@ import CheckoutProduct from "./CheckoutProduct";
 import SlickCarousel from "./SlickCarousel";
 
 function Checkout() {
-  const [{ basket, user }, dispatch] = useStateValue();
+  const [{ basket, user }] = useStateValue();
 
   return (
     <div className="checkout ">
