@@ -6,14 +6,15 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Checkout from "./Checkout";
 import Login from "./Login";
 import Payment from "./Payment";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
 import Orders from "./Orders";
 import { auth } from "./firebase";
 import { useStateValue } from "./StateProvider";
-import { loadStripe } from "@stripe/stripe-js";
-import { Elements } from "@stripe/react-stripe-js";
-import { Seeder } from "./Seeder";
 import ProductDetails from "./ProductDetails";
 import { db } from "./firebase";
+import { Seeder } from "./Seeder";
+import Footer from "./Footer";
 
 const promise = loadStripe(
   "pk_test_51HgVYiAIBAA5hYYSSH3LfZiqhJBPyhGCSuPemKQMRk2zPyUDJsGvZ3BAUIwv6wYmu8bnMp4yjAxPzyfanX4sHQbv009oXf5SmV"
@@ -69,10 +70,12 @@ function App() {
           <Route path="/product/:id">
             <Header />
             <ProductDetails />
+            <Footer />
           </Route>
           <Route path="/orders">
             <Header />
             <Orders />
+            <Footer />
           </Route>
           <Route path="/login">
             <Login />
@@ -80,16 +83,19 @@ function App() {
           <Route path="/checkout">
             <Header />
             <Checkout />
+            <Footer />
           </Route>
           <Route path="/payment">
             <Header />
             <Elements stripe={promise}>
               <Payment />
             </Elements>
+            <Footer />
           </Route>
           <Route path="/">
             <Header />
             <Home />
+            <Footer />
           </Route>
         </Switch>
       </div>

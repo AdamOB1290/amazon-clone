@@ -12,6 +12,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.app {
+  min-width: 385px;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
@@ -20,13 +24,33 @@ code {
 .a-divider.a-divider-section .a-divider-inner {
   height: 44px;
   margin-bottom: -18px;
-  background: linear-gradient(to bottom,rgba(0,0,0,.14),rgba(0,0,0,.03) 3px,transparent);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.14),
+    rgba(0, 0, 0, 0.03) 3px,
+    transparent
+  );
 }
 
 .a-divider.a-divider-section .a-divider-inner:after {
   display: block;
   width: 100%;
   height: 44px;
-  background: linear-gradient(to right,#fff,rgba(255,255,255,0),#fff);
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0), #fff);
   content: "";
+}
+
+.button_effect {
+  border-color: #a8873469 #9c7e316e #846a29a3;
+  background: linear-gradient(to bottom, #ffd265, #d69c0b);
+  box-shadow: 0 0.1rem 0 rgba(255, 255, 255, 0.6) inset;
+}
+
+.button_effect:active {
+  background: linear-gradient(to bottom, #ffd265, #b68200);
+  box-shadow: 0 0.1rem 0 rgba(255, 255, 255, 0.213) inset;
+}
+
+.button_effect:hover {
+  filter: brightness(97%);
 }

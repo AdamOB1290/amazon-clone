@@ -9,14 +9,42 @@ import Magnifier from "react-magnifier";
 import { Rating } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 import Reviews from "./Reviews";
-import Tooltip from "@material-ui/core/Tooltip";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+} from "@material-ui/core";
 
-const faker = require("faker");
+import {
+  Share,
+} from "@material-ui/icons";
+
+import {
+  //////BUTTONS///////
+  EmailShareButton,
+  FacebookShareButton,
+  FacebookMessengerShareButton,
+  RedditShareButton,
+  TwitterShareButton,
+  WhatsappShareButton,
+  ///////ICONS/////////
+  EmailIcon,
+  FacebookIcon,
+  FacebookMessengerIcon,
+  RedditIcon,
+  TwitterIcon,
+  WhatsappIcon,
+} from "react-share";
 
 function ProductDetails() {
   const location = useLocation();
-
-  const [rootUrl, setRootUrl] = useState("http://localhost:3000/");
 
   const [productId, setProductId] = useState(location.pathname.split("/")[2]);
 
@@ -39,6 +67,10 @@ function ProductDetails() {
   const [starHover, setStarHover] = useState(-1);
 
   const [reviewed, setReviewed] = useState(true);
+
+  const [ratingError, setRatingError] = useState(false);
+
+  const [dialogState, setDialogState] = React.useState(false);
 
   const starLabels = {
     0.5: 0.5 + " ★",
@@ -71,6 +103,14 @@ function ProductDetails() {
     // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
     // thus avoiding an infinite loop
   }, [user, productId]);
+
+  const handleDialogClickOpen = () => {
+    setDialogState(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogState(false);
+  };
 
   if (location?.state?.docId && location?.state?.docId != productId) {
     setProductId(location?.state?.docId);
@@ -201,11 +241,14 @@ function ProductDetails() {
         .doc(productId)
         .collection("review_rating")
         .doc(user.uid)
-        .update({
-          username: user.username,
-          review: review,
-          created_at: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+        .set(
+          {
+            username: user.username,
+            review: review,
+            created_at: firebase.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
 
       setReview("");
       setReviewed(true);
@@ -219,77 +262,164 @@ function ProductDetails() {
   } else if (productRatings) {
     sortRating(productRatings);
   }
-  // console.log('location?.state?.rating : '+location?.state?.rating, 'userRating : '+userRating, 'productId : '+productId);
+
+
+
+// console.log('location?.state?.rating : '+location?.state?.rating, 'userRating : '+userRating, 'productId : '+productId);
   return (
     <div>
-      <div className="max-w-10/12 product__wrapper bg-white w-content p-10 flex justify-center mx-auto">
-        <div className="product__img__wrapper w-4/12 flex flex-col items-center">
-          <Magnifier
-            src={
-              location?.state?.image
-                ? location?.state?.image
-                : product?.image
+      <div className="product__wrapper bg-white w-content flex flex-col md:flex-row  justify-center mx-auto">
+        <Card>
+          <div className="block md:hidden">
+          <CardHeader
+            title={
+              location?.state?.title ? location?.state?.title : product?.title
             }
           />
-          <hr />
-          <Box
-            component="fieldset"
-            width={0.9}
-            mt={6}
-            my={2}
-            py={3}
-            borderColor="transparent"
-            boxShadow={1}
-            className="flex flex-col justify-center items-center"
-          >
-            <p className="text-center text-lg underline mb-1">
-              Rate this product :
-            </p>
-            <Tooltip
-              title={starLabels[starHover != -1 ? starHover : userRating]}
-              placement="left"
-              arrow
+          <div className="mb-3 md:w-6/12 lg:w-4/12 flex-col items-center">
+            <Box
+              component="fieldset"
+              width={0.9}
+              className="flex  items-center"
             >
-              <Rating
-                name="simple-controlled"
-                size="large"
-                value={
-                  location?.state?.rating !=undefined ? location?.state?.rating : userRating
-                }
-                precision={0.5}
-                onChange={(event, newValue) => {
-                  setUserRating(newValue);
-                  db.collection("products")
-                    .doc(productId)
-                    .collection("review_rating")
-                    .doc(user?.uid)
-                    .set(
-                      {
-                        rating: newValue,
-                      },
-                      {
-                        merge: true,
-                      }
-                    );
-                }}
-                onChangeActive={(event, newHover) => {
-                  setStarHover(newHover);
-                }}
-              />
-            </Tooltip>
-          </Box>
-        </div>
-        <div className="product__detail__wrapper w-8/12">
-          <h1 className=" text-4xl mb-3">
+              <p className="text-center text-md mx-4 my-2">
+                Rate this product :
+              </p>
+              <Tooltip
+                title={starLabels[starHover !== -1 ? starHover : userRating]}
+                placement="left"
+                arrow
+              >
+                <Rating
+                  name="simple-controlled"
+                  value={
+                    location?.state?.rating !== undefined
+                      ? location?.state?.rating
+                      : userRating
+                  }
+                  precision={0.5}
+                  onChange={(event, newValue) => {
+                    if (user?.uid) {
+                      setUserRating(newValue);
+                      db.collection("products")
+                        .doc(productId)
+                        .collection("review_rating")
+                        .doc(user?.uid)
+                        .set(
+                          {
+                            rating: newValue,
+                          },
+                          {
+                            merge: true,
+                          }
+                        );
+                    } else {
+                      setRatingError(true);
+                    }
+                  }}
+                  onChangeActive={(event, newHover) => {
+                    setStarHover(newHover);
+                  }}
+                />
+              </Tooltip>
+              {ratingError ? (
+                <span className="text-red-600 text-sm font-semibold">
+                  In order to give a rating you have to be Signed In
+                </span>
+              ) : (
+                ""
+              )}
+            </Box>
+          </div>
+          </div>
+          <div className="product__img__wrapper md:w-full md:m-5  flex flex-col items-center">
+            <Magnifier
+              mgWidth={300}
+              mgHeight={300}
+              zoomFactor={0.8}
+              src={
+                location?.state?.image ? location?.state?.image : product?.image
+              }
+            />
+            <hr />
+          </div>
+
+          
+          <div className="hidden md:flex md:w-full md:m-5 flex-col items-center">
+            <Box
+              component="fieldset"
+              width={0.9}
+              className="flex flex-col justify-center items-center"
+            >
+              <p className="text-center text-lg underline mb-1">
+                Rate this product :
+              </p>
+              <Tooltip
+                title={starLabels[starHover != -1 ? starHover : userRating]}
+                placement="left"
+                arrow
+              >
+                <Rating
+                  name="simple-controlled"
+                  size="large"
+                  value={
+                    location?.state?.rating != undefined
+                      ? location?.state?.rating
+                      : userRating
+                  }
+                  precision={0.5}
+                  onChange={(event, newValue) => {
+                    if (user?.uid) {
+                      setUserRating(newValue);
+                      db.collection("products")
+                        .doc(productId)
+                        .collection("review_rating")
+                        .doc(user?.uid)
+                        .set(
+                          {
+                            rating: newValue,
+                          },
+                          {
+                            merge: true,
+                          }
+                        );
+                    } else {
+                      setRatingError(true);
+                    }
+                  }}
+                  onChangeActive={(event, newHover) => {
+                    setStarHover(newHover);
+                  }}
+                />
+              </Tooltip>
+              {ratingError ? (
+                <span className="text-red-600 text-sm font-semibold">
+                  In order to give a rating you have to be Signed In
+                </span>
+              ) : (
+                ""
+              )}
+            </Box>
+          </div>
+          
+        </Card>
+       
+        <div className="product__detail__wrapper my-5 mx-3 md:w-6/12 lg:w-8/12">
+          <h1 className="text-2xl font-bold hidden md:block sm:text-4xl mb-3">
             {location?.state?.title ? location?.state?.title : product?.title}
           </h1>
           <p className="mb-2">
-            Marque: XIAOMI |{" "}
+            Brand:{" "}
+            <span>
+              {location?.state?.brand ? location?.state?.brand : product?.brand}
+            </span>{" "}
+            |{" "}
             <span className="hover:underline hover:text-orange-600 cursor-pointer">
-              Similar products from XIAOMI
+              Similar products from{" "}
+              {location?.state?.brand ? location?.state?.brand : product?.brand}
             </span>
           </p>
-          <div className="product__rating">
+          <div className="product__rating flex justify-between items-center">
             <Tooltip
               title={
                 location?.state?.avgRating
@@ -314,6 +444,82 @@ function ProductDetails() {
                 />
               </Box>
             </Tooltip>
+            <Tooltip title={"Share"} arrow interactive>
+            <IconButton aria-label="share" onClick={handleDialogClickOpen}>
+              <Share className="text-blue-600" />
+            </IconButton>
+          </Tooltip>
+          <Dialog
+            open={dialogState}
+            onClose={handleDialogClose}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle
+              id="alert-dialog-title"
+              className="border-b text-center"
+            >
+              {"Share This Product"}
+            </DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Choose one of the following social medias :
+              </DialogContentText>
+              <div className="w-full flex justify-between items-center">
+                <FacebookShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <FacebookIcon logoFillColor="white" size={40} round={true} />
+                </FacebookShareButton>
+                <FacebookMessengerShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <FacebookMessengerIcon
+                    logoFillColor="white"
+                    size={40}
+                    round={true}
+                  />
+                </FacebookMessengerShareButton>
+                <EmailShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <EmailIcon logoFillColor="white" size={40} round={true} />
+                </EmailShareButton>
+                <RedditShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <RedditIcon logoFillColor="white" size={40} round={true} />
+                </RedditShareButton>
+                <TwitterShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <TwitterIcon logoFillColor="white" size={40} round={true} />
+                </TwitterShareButton>
+                <WhatsappShareButton
+                  url="someurl"
+                  quote={"Buy this product now by clicking on the link"}
+                  hashtag="#amazonClone"
+                >
+                  <WhatsappIcon logoFillColor="white" size={40} round={true} />
+                </WhatsappShareButton>
+              </div>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleDialogClose} color="primary">
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
           </div>
           <hr />
           <p className="product__price text-2xl mb-5">
@@ -324,13 +530,13 @@ function ProductDetails() {
           </p>
           <button
             onClick={addToBasket}
-            className="w-full mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded btn_inner_shadow border border-black"
+            className="w-full font-semibold mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-2 px-4 rounded button_effect border border-black"
           >
             Add To Basket
           </button>
           <div className="mt-8">
-            <h1 className="text-xl">Description:</h1>
-            <span className="break-all">
+            <h1 className="text-xl font-semibold">Description:</h1>
+            <span className="break">
               {location?.state?.description
                 ? location?.state?.description
                 : product?.description}
@@ -339,14 +545,14 @@ function ProductDetails() {
         </div>
       </div>
 
-      <div className=" py-3 reviews__wrapper w-full bg-white mt-10 flex justify-center flex-col">
-        <div className="header__reviews px-20 pb-4 flex justify-between items-center border-b border-gray-400 ">
+      <div className=" py-3 reviews__wrapper mx-auto w-full bg-white mt-10 flex justify-center flex-col">
+        <div className="header__reviews whitespace-no-wrap px-20 pb-4 flex flex-col sm:flex-row justify-between items-center border-b border-gray-400 ">
           <h1 className="text-3xl">User Reviews</h1>
           <span className="text-orange-400 font-semibold text-xl">
             Read More <i className="fas fa-angle-right align-middle ml-2"></i>
           </span>
         </div>
-        <div className="body__reviews flex px-20 mt-5">
+        <div className="body__reviews flex flex-col md:flex-row px-5 md:px-20 mt-5">
           <div className="ratings">
             <h1 className="text-lg font-semibold ">
               Ratings{" "}
@@ -410,18 +616,18 @@ function ProductDetails() {
               </ul>
             </div>
           </div>
-          <div className="ratings flex flex-col w-full ml-20">
+          <div className="ratings flex flex-col w-full md:ml-10 lg:ml-20">
             {!reviewed ? (
               <form
                 onSubmit={addReview}
-                className="textArea__wrapper flex flex-col items-center mb-10"
+                className="textArea__wrapper flex flex-col w-full items-center mb-10"
               >
-                <h2 className="font-normal mb-5 text-2xl">
+                <h2 className="font-normal whitespace-no-wrap mb-5 text-2xl">
                   Write your own review
                 </h2>
                 <textarea
                   name="review"
-                  className="resize-none border border-gray-500 rounded focus:outline-none focus:shadow-outline w-7/12 mb-2 p-4"
+                  className="resize-none border border-gray-500 rounded focus:outline-none focus:shadow-outline w-full md:w-10/12 mb-2 p-4"
                   rows="5"
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
@@ -435,7 +641,7 @@ function ProductDetails() {
                 )}
                 <button
                   type="submit"
-                  className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-10 rounded btn_inner_shadow border border-black"
+                  className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-10 rounded button_effect border"
                 >
                   Submit
                 </button>
@@ -443,6 +649,7 @@ function ProductDetails() {
             ) : (
               ""
             )}
+
             <Reviews
               reviewed={reviewed}
               setReviewed={setReviewed}

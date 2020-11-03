@@ -28,7 +28,7 @@ function Subtotal() {
         prefix={"$"}
       />
 
-      <button onClick={(e) => history.push("/payment")}>
+      <button className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-2 rounded button_effect border" onClick={(e) => history.push("/payment")}>
         Proceed to Checkout
       </button>
     </div>

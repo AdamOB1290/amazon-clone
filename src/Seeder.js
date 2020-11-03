@@ -1,6 +1,6 @@
 import Unsplash, { toJson } from "unsplash-js";
 import fetch from "node-fetch";
-import { db, auth } from "./firebase";
+import { db } from "./firebase";
 const faker = require("faker");
 global.fetch = fetch;
 
@@ -12,54 +12,52 @@ export const Seeder = () => {
   let products = [];
   let key = 1;
 
-  for (let index = 1; index < 7; index++) {
+  for (let index = 1; index < 3; index++) {
     unsplash.search
-      .photos("product", index, 30, { orientation: "squarish" })
+      .photos("product", index, 24, { orientation: "squarish" })
       .then(toJson)
+      // eslint-disable-next-line no-loop-func
       .then((json) => {
         json.results.forEach((product) => {
           if (product.description && product.alt_description) {
+            let title;
+            let description;
+            if (product.description.length < product.alt_description.length) {
+              title = product.description;
+              description = product.alt_description;
+            } else {
+              title = product.alt_description;
+              description = product.description;
+            }
+
+
             products.push({
               id: key++,
-              title: product.alt_description,
-              description: product.description,
+              title: title,
+              description: description,
+              brand: faker.company.companyName(),
               price: faker.commerce.price(),
-              image: product.urls.full,
+              image: product.urls.regular,
             });
           }
         });
       });
   }
 
-  
 
-//   const productImages = [
-//     "./productImages/61B04f0ALWL._AC_SY240_.jpg",
-//     "./productImages/61uHJ+pWHSL._AC_SY600_.jpg",
-//     "./productImages/71gK7VlDnGL._AC_SY600_.jpg",
-//     "./productImages/71I13Ws9GCL._AC_SY600_.jpg",
-//     "./productImages/71KxwR9f4TL._AC_SY600_.jpg",
-//     "./productImages/81+jNVOUsJL._AC_SY600_.jpg",
-//     "./productImages/81BCS8w0v9L._AC_SY600_.jpg",
-//     "./productImages/81L9+4dTIgL._SX522_.jpg",
-//     "./productImages/611xsvsKqVL._AC_SY240_.jpg",
-//     "./productImages/810i8W-qRHL._AC_SY600_.jpg",
-//   ];
 
-setTimeout(() =>{
+  setTimeout(() => {
     console.log(products.length);
     products.forEach((product, i) => {
-        console.log(product);
+      console.log(product);
       db.collection("products").add({
         id: product.id,
         title: product.title,
+        brand: product.brand,
         price: product.price,
         image: product.image,
         description: product.description,
       });
-     
     });
-}, 5000)
-    
-    
+  }, 5000);
 };

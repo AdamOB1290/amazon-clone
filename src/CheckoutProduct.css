@@ -1,32 +1,87 @@
 .checkoutProduct {
-    display: flex;
-    margin-top: 20px;
-    margin-bottom: 20px;
+  display: flex;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .checkoutProduct__info {
-    padding-left: 20px
+  padding-left: 20px;
 }
-
-.checkoutProduct__info > button {
-    background: #f0c14b;
-    border: 1px solid;
-    margin-top: 10px;
-    border-color: #a88734 #9c7e31 #846a29;
-    color: #111;
-}
-
-.checkoutProduct__image {
-    object-fit: contain;
-    width: 180px;
-    height: 180px;
-  }
 
 .checkoutProduct__rating {
-    display: flex;
-  }
+  display: flex;
+}
 
 .checkoutProduct__title {
-    font-size: 17px;
-    font-weight: 800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* number of lines to show */
+  -webkit-box-orient: vertical;
+}
+.checkoutProduct__price {
+  margin-top: 10px;
+  color: rgb(248, 169, 21);
+}
+
+.payment__items > div,
+.orders__order > div {
+  margin: 0 0 10px 0;
+  width: 100%;
+}
+
+.payment__items .MuiCardContent-root,
+.orders__order .MuiCardContent-root {
+  padding-top: 5px;
+  padding-bottom: 0;
+}
+
+.payment__items > div img,
+.orders__order > div img {
+  width: 160px;
+  height: auto;
+}
+
+.payment__items .checkoutProduct__title,
+.orders__order .checkoutProduct__title {
+  line-height: 20px;
+  font-size: 1.25rem;
+}
+
+.payment__items .MuiRating-root,
+.orders__order .MuiRating-root {
+  font-size: 25px;
+}
+.payment__items .price_removeBtn_div,
+.orders__order .price_removeBtn_div {
+  display: flex;
+}
+
+.payment__items > div .remove_cart_up,
+.orders__order .remove_cart_up {
+  display: block;
+}
+
+.payment__items > div .remove_cart_down,
+.orders__order .remove_cart_down {
+  display: none;
+}
+
+.orders__order .checkoutProduct__title {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.orders__order .MuiCardActions-root {
+  padding-bottom: 0;
+}
+
+.orders__order .MuiBox-root {
+  margin-top: 0 !important;
+}
+
+@media screen and (max-width: 640px) {
+  .checkoutProduct__title {
+    -webkit-line-clamp: 1; /* number of lines to show */
+  }
 }

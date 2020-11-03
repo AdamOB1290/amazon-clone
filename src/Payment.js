@@ -23,20 +23,25 @@ function Payment() {
   const [clientSecret, setClientSecret] = useState(true);
 
   useEffect(() => {
+    console.log("THE SECRET before IS >>>", clientSecret);
+
+    // console.log(basket);
     // generate the special stripe secret which allows us to charge a customer
     const getClientSecret = async () => {
       const response = await axios({
         method: "post",
         // Stripe expects the total in a currencies subunits
-        url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
+        url: `/payments/create?total=${getBasketTotal(basket) * 100}`, 
       });
+      console.log('client secret', response.data.clientSecret);
       setClientSecret(response.data.clientSecret);
+      console.log('total', getBasketTotal(basket) * 100);
     };
 
     getClientSecret();
   }, [basket]);
 
-  console.log("THE SECRET IS >>>", clientSecret);
+  console.log("THE SECRET after IS >>>", clientSecret);
   // console.log('👱', user)
 
   const handleSubmit = async (event) => {
@@ -84,16 +89,16 @@ function Payment() {
   };
 
   return (
-    <div className="payment">
-      <div className="payment__container">
-        <h1>
+    <div className="payment w-full sm:w-9/12 mx-auto">
+      <div className="payment__container mb-10">
+        <h1 className="text-xl font-semibold">
           Checkout (<Link to="/checkout">{basket?.length} items</Link>)
         </h1>
 
         {/* Payment section - delivery address */}
-        <div className="payment__section">
+        <div className="payment__section border-b">
           <div className="payment__title">
-            <h3>Delivery Address</h3>
+            <h3 className="font-semibold">Delivery Address</h3>
           </div>
           <div className="payment__address">
             <p>{user?.email}</p>
@@ -103,13 +108,14 @@ function Payment() {
         </div>
 
         {/* Payment section - Review Items */}
-        <div className="payment__section">
+        <div className="payment__section border-b">
           <div className="payment__title">
-            <h3>Review items and delivery</h3>
+            <h3 className="font-semibold">Review items and delivery</h3>
           </div>
           <div className="payment__items">
-            {basket.map((item) => (
+            {basket.map((item, i) => (
               <CheckoutProduct
+                key={i}
                 id={item.id}
                 title={item.title}
                 image={item.image}
@@ -123,7 +129,7 @@ function Payment() {
         {/* Payment section - Payment method */}
         <div className="payment__section">
           <div className="payment__title">
-            <h3>Payment Method</h3>
+            <h3 className="font-semibold">Payment Method</h3>
           </div>
           <div className="payment__details">
             {/* Stripe magic will go */}
@@ -133,20 +139,20 @@ function Payment() {
 
               <div className="payment__priceContainer">
                 <CurrencyFormat
-                  renderText={(value) => <h3>Order Total: {value}</h3>}
+                  renderText={(value) => <h3>Order Total: <span className="font-bold" >{value}</span> </h3>}
                   decimalScale={2}
                   value={getBasketTotal(basket)}
                   displayType={"text"}
                   thousandSeparator={true}
                   prefix={"$"}
                 />
-                <button disabled={processing || disabled || succeeded}>
-                  <span>{processing ? <p>Processing</p> : "Buy Now"}</span>
+                <button className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 rounded button_effect border w-full" disabled={processing || disabled || succeeded}>
+                  <span className="font-semibold" >{processing ? <p>Processing</p> : "Buy Now"}</span>
                 </button>
               </div>
 
               {/* Errors */}
-              {error && <div>{error}</div>}
+              {error && <div className="text-red-700">{error}</div>}
             </form>
           </div>
         </div>
