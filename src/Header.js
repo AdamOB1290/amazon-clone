@@ -1,17 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Header.css";
 import SearchIcon from "@material-ui/icons/Search";
-import Menu from "@material-ui/core/Menu";
-import Fade from "@material-ui/core/Fade";
 import MenuItem from "@material-ui/core/MenuItem";
-import { ShoppingBasket } from "@material-ui/icons";
 import { Link, useHistory } from "react-router-dom";
 import { useStateValue } from "./StateProvider";
 import { auth } from "./firebase";
 import { db } from "./firebase";
-import Dropdown from "./Dropdown";
 import ClickAwayListener from "@material-ui/core/ClickAwayListener";
-import Grow from "@material-ui/core/Grow";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
@@ -31,21 +26,22 @@ const useStyles = makeStyles((theme) => ({
 function Header() {
   const history = useHistory();
   const [rootUrl, setRootUrl] = useState("http://localhost:3000/");
-  const [{ basket, user }, dispatch] = useStateValue();
+  const [{ basket, user, username }, dispatch] = useStateValue();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [typedProduct, setTypedProduct] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [searchByEnter, setSearchByEnter] = useState(false);
   const options = useRef([]);
-  const [anchorEl, setAnchorEl] = useState(null);
   const ITEM_HEIGHT = 48;
   const [productRatings, setProductRatings] = useState([]);
   // const [userRating, setUserRating] = useState(0);
   const userRating = useRef(0);
-  const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [openUserOptions, setOpenUserOptions] = useState(false);
   const [highlighted, setHighlighted] = useState("");
   const anchorRef = useRef(null);
+  const anchorRefUser = useRef(null);
 
   const handleClose = (event) => {
     if (anchorRef.current && anchorRef.current.contains(event.target)) {
@@ -54,10 +50,16 @@ function Header() {
 
     setOpen(false);
   };
+  const handleCloseUser = (event) => {
+    if (anchorRefUser.current && anchorRefUser.current.contains(event.target)) {
+      return;
+    }
+
+    setOpenUserOptions(false);
+  };
 
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
-
   useEffect(() => {
     if (selectedProduct) {
       db.collection("products")
@@ -73,7 +75,7 @@ function Header() {
               ...productRatings,
               doc.data().rating,
             ]);
-            if (doc.id == user?.uid) {
+            if (doc.id === user?.uid) {
               // add his rating to the variable
               // setUserRating(doc.data().rating);
               userRating.current = doc.data().rating;
@@ -98,11 +100,15 @@ function Header() {
     }
 
     prevOpen.current = open;
-  }, [open]);
+  }, [open, user]);
 
   products.forEach((product) => {
     options.current.push(product.data.title);
   });
+
+  const handleOpenUser = (e) => {
+    setOpenUserOptions(!openUserOptions);
+  };
 
   const handleKeyUp = (e) => {
     setHighlighted(e.target.value);
@@ -123,16 +129,33 @@ function Header() {
     }
   };
   const sendToSeachBar = (product) => {
-    setTypedProduct(product);
+    setTypedProduct(product?.data?.title);
     setSelectedProduct(product);
     setOpen(false);
   };
+
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      if (filteredProducts[0]) {
+        sendToSeachBar(filteredProducts[0]);
+        setSearchByEnter(true);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProduct && searchByEnter) {
+      goToProduct();
+      setSearchByEnter(false);
+    }
+  }, [searchByEnter]);
 
   const goToProduct = () => {
     if (selectedProduct) {
       const docId = selectedProduct.id;
       const id = selectedProduct.data.id;
       const title = selectedProduct.data.title;
+      const brand = selectedProduct.data.brand;
       const image = selectedProduct.data.image;
       const price = selectedProduct.data.price;
       const rating = userRating.current;
@@ -144,6 +167,7 @@ function Header() {
           docId,
           id,
           title,
+          brand,
           image,
           price,
           avgRating,
@@ -151,96 +175,256 @@ function Header() {
           productRatings,
         },
       });
-      setSelectedProduct("");
+
       userRating.current = 0;
       setProductRatings([]);
     }
   };
+  let i = 0
+
+// USERNAME IS SET IN USER OBJECT BUT IT SAYS UNDEFINED WHY ?
+
+  // async function waitForElement() {
+  //   i = i+1
+  //   if (typeof user?.username !== "undefined") {
+  //     //variable exists, do what you want
+  //     console.log(username, user?.email, user?.uid);
+  //   } else {
+  //     console.log(i+' loops')
+  //     console.log(user?.username, user)
+  //     setTimeout(waitForElement, 5000);
+  //   }
+  // }
+  // waitForElement()
+
   return (
-    <div className="header flex justify-between items-center w-full">
-      <Link to="/">
-        <img className="header__logo" src={rootUrl + "./amazon_logo.png"} />
-      </Link>
-
-      <div className="header__search__wrapper">
-        <div className="header__search relative">
-          <input
-            className="header__searchInput"
-            onKeyUp={handleKeyUp}
-            type="text"
-            ref={anchorRef}
-            aria-controls={open ? "menu-list-grow" : undefined}
-            aria-haspopup="true"
-            onChange={(e) => setTypedProduct(e.target.value)}
-            value={typedProduct?.data?.title }
-          />
-          <SearchIcon onClick={goToProduct} className="header__searchIcon" />
-          <Popper
-            open={open}
-            anchorEl={anchorRef.current}
-            role={undefined}
-            transition
-            disablePortal
-            className="product_search_list"
-          >
-            <Paper
-              id="menu-list-container"
-              style={{
-                maxHeight: ITEM_HEIGHT * 8.8,
-              }}
+    <nav className="header w-full">
+      <div className="header__containerSmall ">
+        <div className="header__topNav ">
+          <Link to="/">
+            <img
+              className="header__logo w-24 "
+              alt="Amazon Logo"
+              src={rootUrl + "./amazon_logo.png"}
+            />
+          </Link>
+          <div className="header__rightSide ">
+            <div
+              ref={anchorRefUser}
+              className="header__user flex items-center relative"
             >
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList id="menu-list">
-                  {filteredProducts?.map((product, i) => (
-                    <MenuItem onClick={() => sendToSeachBar(product)} key={i}>
-                      <img
-                        className="h-10 w-10"
-                        src={product?.data.image}
-                        alt=""
-                      />
-                      <Highlight matchElement="strong" search={highlighted}>
-                        {product?.data.title}
-                      </Highlight>
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Popper>
-        </div>
-      </div>
+              {/* <span
+                onClick={handleOpenUser}
+                className=" header__mobileText mt-2 mx-2"
+              >
+                Hello {!user ? "Guest" : user.username}
+              </span> */}
 
-      <div className="header__nav">
-        <Link to={!user && "/login"}>
-          <div onClick={handleAuthenticaton} className="header__option">
-            <span className="header__optionLineOne">
-              Hello {!user ? "Guest" : user.email}
-            </span>
-            <span className="header__optionLineTwo">
-              {user ? "Sign Out" : "Sign In"}
-            </span>
+              <img
+                onClick={handleOpenUser}
+                className="header__gif"
+                src="https://images-na.ssl-images-amazon.com/images/G/01/gno/sprites/account-wave2x._CB403841047_.gif"
+                alt=""
+              />
+
+              <Popper
+                open={openUserOptions}
+                anchorEl={anchorRefUser.current}
+                transition
+                disablePortal
+                className="user_list"
+              >
+                <Paper
+                  id="menu-list-container-user"
+                  style={{
+                    maxHeight: ITEM_HEIGHT * 5,
+                  }}
+                >
+                  <ClickAwayListener onClickAway={handleCloseUser}>
+                    <MenuList id="menu-list">
+                      <MenuItem>
+                        <Link to={{ pathname: "/orders" }}>
+                          <span className="text-white font-semibold">
+                            Returns & Orders
+                          </span>
+                        </Link>
+                      </MenuItem>
+                      <MenuItem>
+                        <Link
+                          onClick={handleAuthenticaton}
+                          to={!user && "/login"}
+                        >
+                          <span className="text-red-600 font-semibold">
+                            {user ? "Sign Out" : "Sign In"}
+                          </span>
+                        </Link>
+                      </MenuItem>
+                    </MenuList>
+                  </ClickAwayListener>
+                </Paper>
+              </Popper>
+            </div>
+            <Link className="flex items-center" to={{ pathname: "/checkout" }}>
+              <div className="header__optionBasket">
+                <img
+                  className="header__basketIcon"
+                  alt="Basket Icon"
+                  src={rootUrl + "./cart.png"}
+                />
+                <span className="header__basketCount">{basket?.length}</span>
+                <div className="header__basketOption">
+                  <span className=" header__optionLineTwo header__optionCart">
+                    Cart
+                  </span>
+                </div>
+              </div>
+            </Link>
           </div>
-        </Link>
-        <Link to="/orders">
-          <div className="header__option">
-            <span className="header__optionLineOne">Returns</span>
-            <span className="header__optionLineTwo">& Orders</span>
-          </div>
-        </Link>
-        <div className="header__option">
-          <span className="header__optionLineOne">Your</span>
-          <span className="header__optionLineTwo">Prime</span>
         </div>
-        <Link className="flex items-center" to="/checkout">
-          <div className="heaver__optionBasket">
-            <ShoppingBasket />
-            <span className="header__optionLineTwo header__basketCount">
-              {basket?.length}
-            </span>
+        <div className="header__search__wrapper w-full mb-3 sm:mb-0">
+          <div className="header__search relative">
+            <input
+              className="header__searchInput"
+              onKeyUp={handleKeyUp}
+              type="text"
+              ref={anchorRef}
+              aria-controls={open ? "menu-list-grow" : undefined}
+              aria-haspopup="true"
+              onChange={(e) => setTypedProduct(e.target.value)}
+              value={typedProduct}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchIcon onClick={goToProduct} className="header__searchIcon" />
+            <Popper
+              open={open}
+              anchorEl={anchorRef.current}
+              role={undefined}
+              transition
+              disablePortal
+              className="product_search_list"
+            >
+              <Paper
+                id="menu-list-container"
+                style={{
+                  maxHeight: ITEM_HEIGHT * 8.8,
+                }}
+              >
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MenuList id="menu-list">
+                    {filteredProducts?.map((product, i) => (
+                      <MenuItem onClick={() => sendToSeachBar(product)} key={i}>
+                        <img
+                          className="h-10 w-10"
+                          src={product?.data.image}
+                          alt=""
+                        />
+                        <Highlight matchElement="strong" search={highlighted}>
+                          {product?.data.title}
+                        </Highlight>
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Popper>
           </div>
-        </Link>
+        </div>
       </div>
-    </div>
+      <div className="header__containerBig flex flex-col sm:flex-row justify-between items-center mx-auto px-5 sm:px-0">
+        <Link to="/">
+          <img
+            className="header__logo w-40 sm:w-24 mb-3 sm:mb-0 sm:mx-5"
+            alt="Amazon Logo"
+            src={rootUrl + "./amazon_logo.png"}
+          />
+        </Link>
+
+        <div className="header__search__wrapper w-full mb-3 sm:mb-0">
+          <div className="header__search relative">
+            <input
+              className="header__searchInput"
+              onKeyUp={handleKeyUp}
+              type="text"
+              ref={anchorRef}
+              aria-controls={open ? "menu-list-grow" : undefined}
+              aria-haspopup="true"
+              onChange={(e) => setTypedProduct(e.target.value)}
+              value={typedProduct}
+              onKeyPress={handleKeyPress}
+            />
+            <SearchIcon onClick={goToProduct} className="header__searchIcon" />
+            <Popper
+              open={open}
+              anchorEl={anchorRef.current}
+              role={undefined}
+              transition
+              disablePortal
+              className="product_search_list"
+            >
+              <Paper
+                id="menu-list-container"
+                style={{
+                  maxHeight: ITEM_HEIGHT * 8.8,
+                }}
+              >
+                <ClickAwayListener onClickAway={handleClose}>
+                  <MenuList id="menu-list">
+                    {filteredProducts?.map((product, i) => (
+                      <MenuItem onClick={() => sendToSeachBar(product)} key={i}>
+                        <img
+                          className="h-10 w-10"
+                          src={product?.data.image}
+                          alt=""
+                        />
+                        <Highlight matchElement="strong" search={highlighted}>
+                          {product?.data.title}
+                        </Highlight>
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </ClickAwayListener>
+              </Paper>
+            </Popper>
+          </div>
+        </div>
+        <div className="header__nav justify-evenly">
+          <Link to={!user && "/login"}>
+            <div onClick={handleAuthenticaton} className="header__option">
+              <span className="header__optionLineOne">
+                Hello {!user ? "Guest" : user?.email}
+              </span>
+              <span className="header__optionLineTwo">
+                {user ? "Sign Out" : "Sign In"}
+              </span>
+            </div>
+          </Link>
+          <Link to={{ pathname: "/orders" }}>
+            <div className="header__option  ">
+              <span className="header__optionLineOne">Returns</span>
+              <span className="header__optionLineTwo">& Orders</span>
+            </div>
+          </Link>
+          <div className="header__option  ">
+            <span className="header__optionLineOne">Your</span>
+            <span className="header__optionLineTwo">Prime</span>
+          </div>
+          <Link className="flex items-center" to={{ pathname: "/checkout" }}>
+            <div className="header__optionBasket">
+              <img
+                className="header__basketIcon"
+                alt="Basket Icon"
+                src={rootUrl + "./cart.png"}
+              />
+              <span className="header__basketCount">{basket?.length}</span>
+              <div className="header__basketOption">
+                <span className="header__optionLineOne invisible">Your</span>
+                <span className="header__optionLineTwo">Cart</span>
+              </div>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 }
 

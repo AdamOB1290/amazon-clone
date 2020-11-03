@@ -7,7 +7,7 @@ export const initialState = {
 //   Selector
 export const getBasketTotal = (basket) =>
   //   reduce() iterates through the basket and adds up the total
-  basket?.reduce((amount, item) => item.price + amount, 0);
+  basket?.reduce((amount, item) => parseInt(item.price) + amount, 0);
 
 export const getStarTotal = (array) =>
   //   reduce() iterates through the basket and adds up the total
@@ -48,9 +48,22 @@ const reducer = (state, action) => {
       };
 
     case "SET_USER":
+      console.log('state', state);
+      console.log('action', action);
+      function waitForUsername() {
+        // Wait for username to be set then dispatch
+        // if (typeof authUser.username !== "undefined") {
+
+        // } else {
+        //   console.log('waiting');
+        //   setTimeout(waitForUsername, 5000);
+        // }
+      }
+      waitForUsername()
       return {
         ...state,
         user: action.user,
+        username: action.username,
       };
     default:
       return state;

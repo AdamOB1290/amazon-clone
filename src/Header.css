@@ -1,89 +1,204 @@
 .header {
-    height: 60px;
-    background-color: #131921;
+    height: fit-content;
+    min-width: 385px;
     position: sticky;
     top: 0;
     z-index: 100;
-}
-
-.header__logo {
-    width: 100px;
+    background-color: #232f3e;
+    padding: 0 10px;
+  }
+  .header__containerBig {
+    display: none;
+  }
+  .header__containerSmall {
+    display: flex;
+    flex-direction: column;
+    padding: 0 10px;
+  }
+  .header__gif {
+    max-height: 40px;
     object-fit: contain;
-    margin: 0 20px;
-    margin-top: 18px;
-}
-
-.header__search__wrapper{
+    cursor: pointer;
+    width: 35px;
+  }
+  .header__mobileText {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .header__topNav {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .header__logo {
+    object-fit: contain;
+    margin: 25px 0 5px;
+  }
+  .header__rightSide {
+    display: flex;
+    align-items: center;
+  }
+  
+  .header__search__wrapper {
     flex: 1;
-    max-width: 500px !important;
-}
-
-.header__search {
+    max-width: 800px !important;
+  }
+  
+  .header__search {
     display: flex;
     flex: 1;
     align-items: center;
     border-radius: 24px;
-}
-
-.header__searchInput, #header-searchInput {
+  }
+  
+  .header__searchInput,
+  #header-searchInput {
     height: 30px;
     padding: 11px;
     border: none;
     width: 100%;
-}
-
-.header__searchIcon {
-    padding:  5px;
+  }
+  
+  .header__searchIcon {
+    padding: 5px;
     height: 30px !important;
-    background-color:  #cd9042;
-}
-
-.header__search svg {
+    background-color: #cd9042;
+  }
+  
+  .header__search svg {
     font-size: 2rem;
-}
-
-.header__optionLineOne {
-    font-size: 10px;
-}
-
-.header__optionLineTwo {
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.heaver__optionBasket {
+  }
+  
+  .header__optionLineOne {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .header__optionLineTwo {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .header__optionCart {
+    padding-top: 5px;
+  }
+  
+  .header__optionBasket {
     display: flex;
-    align-items: center;
     color: white;
-}
-
-.header__basketCount {
+    position: relative;
+  }
+  
+  .header__basketIcon {
+    margin-top: 5px;
+    height: 25px;
     margin-left: 10px;
-    margin-right: 10px;
-}
-
-.header__nav {
+  }
+  
+  .header__basketCount {
+    z-index: 2;
+    position: absolute;
+    left: 27px;
+    right: auto;
+    top: -4px;
+    font-size: 14px;
+    font-weight: 800;
+  }
+  
+  .header__option {
     display: flex;
-    justify-content: space-evenly;
-}
-
-.header__option {
+    margin: 10px;
+    color: white;
+  }
+  .header__basketOption {
     display: flex;
     flex-direction: column;
-    margin-left: 10px;
     margin-right: 10px;
     color: white;
-}
-
-.product_search_list{
-    left: 16px !important;
-
-}
-
-#menu-list-container{
+  }
+  
+  .user_list {
+    position: absolute !important;
+    border: 1px solid rgba(0, 0, 0, 0.322);
+    z-index: 8000;
+  }
+  
+  .product_search_list {
+    top: 25px !important;
+  }
+  
+  #menu-list-container {
     width: 500px;
     border-radius: 0;
     overflow: scroll;
     border-top: 1px solid rgba(0, 0, 0, 0.322);
-
-}
+  }
+  #menu-list-container-user {
+    width: 200px;
+    border-radius: 0;
+    background-color: #232f3e;
+  }
+  
+  .header__nav {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  /* flex flex-col sm:flex-row  */
+  @media (min-width: 640px) {
+    .header__basketCount {
+      left: 31px;
+    }
+    .header__basketIcon {
+      margin-top: 0;
+      height: 30px;
+      margin-left: 10px;
+    }
+    .header {
+      background-color: #131921;
+    }
+    .header__logo {
+      margin-top: 18px;
+    }
+    .he .header__optionBasket {
+      align-items: center;
+      margin: 10px;
+    }
+    .header__containerBig {
+      display: flex;
+      max-width: 1500px;
+    }
+  
+    .header__containerSmall {
+      display: none;
+    }
+  
+    .header__nav {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+    .header__option {
+      flex-direction: column;
+    }
+    .header__optionLineOne {
+      font-size: 10px;
+      font-weight: 400;
+    }
+    .header__optionLineTwo {
+      font-size: 13px;
+      font-weight: 800;
+    }
+  
+    .product_search_list {
+      /* left: 16px !important; */
+      top: 0 !important;
+    }
+    .header__search__wrapper {
+      margin-left: 10px;
+    }
+  }

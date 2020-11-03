@@ -1,20 +1,37 @@
-:focus{
-    outline: none !important;
+:focus {
+  outline: none !important;
 }
 .product__img__wrapper img {
-    object-fit: contain;
-}
-
-.btn_inner_shadow {
-    border-color: #a88734 #9c7e31 #846a29;
-    background: linear-gradient(to bottom,#ffd265,#d69c0b);
-    box-shadow: 0 0.1rem 0 rgba(255,255,255,.6) inset;
+  object-fit: contain;
 }
 
 textarea:focus {
-    border-color: #e77600;
-    box-shadow: 0 0 3px 2px rgba(228,121,17,.5) !important;
+  border-color: #e77600;
+  box-shadow: 0 0 3px 2px rgba(228, 121, 17, 0.5) !important;
 }
-  
 
+.product__wrapper,
+.reviews__wrapper {
+  max-width: 1200px;
+}
 
+.product__wrapper .MuiCardHeader-title {
+  font-weight: bold !important;
+}
+.product__wrapper .MuiPaper-elevation1 {
+  box-shadow: unset !important;
+}
+.product__wrapper .MuiCardHeader-root {
+  padding-bottom: 0px !important;
+  text-transform: capitalize;
+}
+.product__wrapper .MuiBox-root-5  {
+  margin-bottom: 0 !important;
+  padding-top: 4px !important;
+}
+
+@media (min-width: 768px) {
+    .product__wrapper .MuiCard-root {
+      width: 50%;
+  }
+}

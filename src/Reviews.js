@@ -57,19 +57,19 @@ export default function Reviews({ setReviewed, setReview, productId }) {
     } else {
       setReviewed(false);
     }
-  } 
-  
+  }
+
   return (
     <div>
       <h1 className="font-semibold text-2xl mb-5">Reviews</h1>
       <div className=" w-full">
-        {reviews?.map((user, i) => (
+        {reviews?.map((reviewer, i) => (
           <div className="w-full" key={i}>
             <div className=" w-full flex relative justify-between items-center">
               <div className="w-full flex items-center">
-                <div className="mr-2 font-bold">{user.username}</div>
+                <div className="mr-2 font-bold">{reviewer.username}</div>
                 <Tooltip
-                  title={user.rating == null ? 0 + " ★" : user.rating + " ★"}
+                  title={reviewer.rating == null ? 0 + " ★" : reviewer.rating + " ★"}
                   placement="top"
                   arrow
                   interactive
@@ -77,7 +77,7 @@ export default function Reviews({ setReviewed, setReview, productId }) {
                   <Box component="fieldset" borderColor="transparent">
                     <Rating
                       name="half-rating-read"
-                      value={user.rating}
+                      value={reviewer.rating}
                       size="small"
                       precision={0.5}
                       readOnly
@@ -85,20 +85,23 @@ export default function Reviews({ setReviewed, setReview, productId }) {
                   </Box>
                 </Tooltip>
               </div>
-              <Dropdown
-                dropItems={["Edit", "Delete"]}
-                productId={productId}
-                setEditClicked={setEditClicked}
-                setReview={setReview}
-                reviewContent={user.review}
-                setReviewed={setReviewed}
-              />
+              {console.log(reviewer)}
+              {user?.uid == reviewer.id ? (
+                <Dropdown
+                  dropItems={["Edit", "Delete"]}
+                  productId={productId}
+                  setEditClicked={setEditClicked}
+                  setReview={setReview}
+                  reviewContent={reviewer.review}
+                  setReviewed={setReviewed}
+                />
+              ): ""}
             </div>
             <div className="mb-2 break-all">
-              <span>{user.review}</span>
+              <span>{reviewer.review}</span>
             </div>
             <span className="text-gray-600 text-sm font-hairline">
-              {moment(user.created_at).fromNow()}
+              {moment(reviewer.created_at).fromNow()}
             </span>
           </div>
         ))}
