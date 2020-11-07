@@ -4,7 +4,7 @@ import RatingBar from "./RatingBar";
 import { useStateValue } from "./StateProvider";
 import { db } from "./firebase";
 import { getStarTotal } from "./reducer";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Magnifier from "react-magnifier";
 import { Rating } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
@@ -22,9 +22,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 
-import {
-  Share,
-} from "@material-ui/icons";
+import { Share } from "@material-ui/icons";
 
 import {
   //////BUTTONS///////
@@ -60,8 +58,6 @@ function ProductDetails() {
 
   const [review, setReview] = useState("");
 
-  const [validationError, setValidationError] = useState(false);
-
   const avgRating = useRef(null);
 
   const [starHover, setStarHover] = useState(-1);
@@ -70,7 +66,11 @@ function ProductDetails() {
 
   const [ratingError, setRatingError] = useState(false);
 
-  const [dialogState, setDialogState] = React.useState(false);
+  const [dialogState, setDialogState] = useState(false);
+
+  const [noUserError, setNoUserError] = useState(false);
+
+  const [noReviewError, setNoReviewError] = useState(false);
 
   const starLabels = {
     0.5: 0.5 + " ★",
@@ -236,24 +236,28 @@ function ProductDetails() {
 
   const addReview = (e) => {
     e.preventDefault();
-    if (!review == "" || !review == null) {
-      db.collection("products")
-        .doc(productId)
-        .collection("review_rating")
-        .doc(user.uid)
-        .set(
-          {
-            username: user.username,
-            review: review,
-            created_at: firebase.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
+    if (user) {
+      if (!review == "" || !review == null) {
+        db.collection("products")
+          .doc(productId)
+          .collection("review_rating")
+          .doc(user.uid)
+          .set(
+            {
+              username: user.username,
+              review: review,
+              created_at: firebase.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
 
-      setReview("");
-      setReviewed(true);
+        setReview("");
+        setReviewed(true);
+      } else {
+        setNoReviewError(true);
+      }
     } else {
-      setValidationError(true);
+      setNoUserError(true);
     }
   };
 
@@ -263,76 +267,74 @@ function ProductDetails() {
     sortRating(productRatings);
   }
 
-
-
-// console.log('location?.state?.rating : '+location?.state?.rating, 'userRating : '+userRating, 'productId : '+productId);
+  // console.log('location?.state?.rating : '+location?.state?.rating, 'userRating : '+userRating, 'productId : '+productId);
   return (
     <div>
       <div className="product__wrapper bg-white w-content flex flex-col md:flex-row  justify-center mx-auto">
         <Card>
           <div className="block md:hidden">
-          <CardHeader
-            title={
-              location?.state?.title ? location?.state?.title : product?.title
-            }
-          />
-          <div className="mb-3 md:w-6/12 lg:w-4/12 flex-col items-center">
-            <Box
-              component="fieldset"
-              width={0.9}
-              className="flex  items-center"
-            >
-              <p className="text-center text-md mx-4 my-2">
-                Rate this product :
-              </p>
-              <Tooltip
-                title={starLabels[starHover !== -1 ? starHover : userRating]}
-                placement="left"
-                arrow
+            <CardHeader
+              title={
+                location?.state?.title ? location?.state?.title : product?.title
+              }
+            />
+            <div className="mb-3 md:w-6/12 lg:w-4/12 flex-col items-center">
+              <Box
+                component="fieldset"
+                width={0.9}
+                className="flex  items-center"
               >
-                <Rating
-                  name="simple-controlled"
-                  value={
-                    location?.state?.rating !== undefined
-                      ? location?.state?.rating
-                      : userRating
-                  }
-                  precision={0.5}
-                  onChange={(event, newValue) => {
-                    if (user?.uid) {
-                      setUserRating(newValue);
-                      db.collection("products")
-                        .doc(productId)
-                        .collection("review_rating")
-                        .doc(user?.uid)
-                        .set(
-                          {
-                            rating: newValue,
-                          },
-                          {
-                            merge: true,
-                          }
-                        );
-                    } else {
-                      setRatingError(true);
+                <p className="text-center text-md mx-4 my-2">
+                  Rate this product :
+                </p>
+                <Tooltip
+                  title={starLabels[starHover !== -1 ? starHover : userRating]}
+                  placement="left"
+                  arrow
+                >
+                  <Rating
+                    name="simple-controlled"
+                    value={
+                      location?.state?.rating !== undefined
+                        ? location?.state?.rating
+                        : userRating
                     }
-                  }}
-                  onChangeActive={(event, newHover) => {
-                    setStarHover(newHover);
-                  }}
-                />
-              </Tooltip>
-              {ratingError ? (
-                <span className="text-red-600 text-sm font-semibold">
-                  In order to give a rating you have to be Signed In
-                </span>
-              ) : (
-                ""
-              )}
-            </Box>
+                    precision={0.5}
+                    onChange={(event, newValue) => {
+                      if (user?.uid) {
+                        setUserRating(newValue);
+                        db.collection("products")
+                          .doc(productId)
+                          .collection("review_rating")
+                          .doc(user?.uid)
+                          .set(
+                            {
+                              rating: newValue,
+                            },
+                            {
+                              merge: true,
+                            }
+                          );
+                      } else {
+                        setRatingError(true);
+                      }
+                    }}
+                    onChangeActive={(event, newHover) => {
+                      setStarHover(newHover);
+                    }}
+                  />
+                </Tooltip>
+                {ratingError ? (
+                  <span className="text-red-600 text-sm font-semibold">
+                    In order to give a rating you have to be Signed In
+                  </span>
+                ) : (
+                  ""
+                )}
+              </Box>
+            </div>
           </div>
-          </div>
-          <div className="product__img__wrapper md:w-full md:m-5  flex flex-col items-center">
+          <div className="product__img__wrapper md:w-full flex flex-col items-center">
             <Magnifier
               mgWidth={300}
               mgHeight={300}
@@ -344,8 +346,7 @@ function ProductDetails() {
             <hr />
           </div>
 
-          
-          <div className="hidden md:flex md:w-full md:m-5 flex-col items-center">
+          <div className="hidden md:flex md:w-full md:my-4 flex-col items-center">
             <Box
               component="fieldset"
               width={0.9}
@@ -401,11 +402,10 @@ function ProductDetails() {
               )}
             </Box>
           </div>
-          
         </Card>
-       
+
         <div className="product__detail__wrapper my-5 mx-3 md:w-6/12 lg:w-8/12">
-          <h1 className="text-2xl font-bold hidden md:block sm:text-4xl mb-3">
+          <h1 className="text-2xl font-bold hidden md:block sm:text-3xl mb-3 capitalize">
             {location?.state?.title ? location?.state?.title : product?.title}
           </h1>
           <p className="mb-2">
@@ -445,81 +445,89 @@ function ProductDetails() {
               </Box>
             </Tooltip>
             <Tooltip title={"Share"} arrow interactive>
-            <IconButton aria-label="share" onClick={handleDialogClickOpen}>
-              <Share className="text-blue-600" />
-            </IconButton>
-          </Tooltip>
-          <Dialog
-            open={dialogState}
-            onClose={handleDialogClose}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle
-              id="alert-dialog-title"
-              className="border-b text-center"
+              <IconButton aria-label="share" onClick={handleDialogClickOpen}>
+                <Share className="text-blue-600" />
+              </IconButton>
+            </Tooltip>
+            <Dialog
+              open={dialogState}
+              onClose={handleDialogClose}
+              aria-labelledby="alert-dialog-title"
+              aria-describedby="alert-dialog-description"
             >
-              {"Share This Product"}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                Choose one of the following social medias :
-              </DialogContentText>
-              <div className="w-full flex justify-between items-center">
-                <FacebookShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <FacebookIcon logoFillColor="white" size={40} round={true} />
-                </FacebookShareButton>
-                <FacebookMessengerShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <FacebookMessengerIcon
-                    logoFillColor="white"
-                    size={40}
-                    round={true}
-                  />
-                </FacebookMessengerShareButton>
-                <EmailShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <EmailIcon logoFillColor="white" size={40} round={true} />
-                </EmailShareButton>
-                <RedditShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <RedditIcon logoFillColor="white" size={40} round={true} />
-                </RedditShareButton>
-                <TwitterShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <TwitterIcon logoFillColor="white" size={40} round={true} />
-                </TwitterShareButton>
-                <WhatsappShareButton
-                  url="someurl"
-                  quote={"Buy this product now by clicking on the link"}
-                  hashtag="#amazonClone"
-                >
-                  <WhatsappIcon logoFillColor="white" size={40} round={true} />
-                </WhatsappShareButton>
-              </div>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleDialogClose} color="primary">
-                Cancel
-              </Button>
-            </DialogActions>
-          </Dialog>
+              <DialogTitle
+                id="alert-dialog-title"
+                className="border-b text-center"
+              >
+                {"Share This Product"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                  Choose one of the following social medias :
+                </DialogContentText>
+                <div className="w-full flex justify-between items-center">
+                  <FacebookShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <FacebookIcon
+                      logoFillColor="white"
+                      size={40}
+                      round={true}
+                    />
+                  </FacebookShareButton>
+                  <FacebookMessengerShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <FacebookMessengerIcon
+                      logoFillColor="white"
+                      size={40}
+                      round={true}
+                    />
+                  </FacebookMessengerShareButton>
+                  <EmailShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <EmailIcon logoFillColor="white" size={40} round={true} />
+                  </EmailShareButton>
+                  <RedditShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <RedditIcon logoFillColor="white" size={40} round={true} />
+                  </RedditShareButton>
+                  <TwitterShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <TwitterIcon logoFillColor="white" size={40} round={true} />
+                  </TwitterShareButton>
+                  <WhatsappShareButton
+                    url="someurl"
+                    quote={"Buy this product now by clicking on the link"}
+                    hashtag="#amazonClone"
+                  >
+                    <WhatsappIcon
+                      logoFillColor="white"
+                      size={40}
+                      round={true}
+                    />
+                  </WhatsappShareButton>
+                </div>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleDialogClose} color="primary">
+                  Cancel
+                </Button>
+              </DialogActions>
+            </Dialog>
           </div>
           <hr />
           <p className="product__price text-2xl mb-5">
@@ -548,7 +556,7 @@ function ProductDetails() {
       <div className=" py-3 reviews__wrapper mx-auto w-full bg-white mt-10 flex justify-center flex-col">
         <div className="header__reviews whitespace-no-wrap px-20 pb-4 flex flex-col sm:flex-row justify-between items-center border-b border-gray-400 ">
           <h1 className="text-3xl">User Reviews</h1>
-          <span className="text-orange-400 font-semibold text-xl">
+          <span className="hidden sm:block text-orange-400 font-semibold text-xl cursor-pointer">
             Read More <i className="fas fa-angle-right align-middle ml-2"></i>
           </span>
         </div>
@@ -632,10 +640,24 @@ function ProductDetails() {
                   value={review}
                   onChange={(e) => setReview(e.target.value)}
                 ></textarea>
-                {validationError ? (
-                  <span className="text-red-600 text-sm font-semibold mb-2">
-                    Please write your review before you submit it !
-                  </span>
+                {noUserError || noReviewError ? (
+                  <div className="mb-2 font-semibold text-red-600 text-sm">
+                    {noUserError ? (
+                      <span>
+                        You need to{" "}
+                        <Link to="/login">
+                          <span className="underline font-bold text-red-600">
+                            Sign In
+                          </span>
+                        </Link>
+                        {" "}before you can submit a review !
+                      </span>
+                    ) : (
+                      <span>
+                        Please write your review before you submit it !
+                      </span>
+                    )}
+                  </div>
                 ) : (
                   ""
                 )}

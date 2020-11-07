@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./Home.css";
 import Product from "./Product";
 import Pagination from "./Pagination";
 import { db } from "./firebase";
-import WindowDimensions from "./WindowDimensions";
 import { useStateValue } from "./StateProvider";
+import BannerCarousel from "./BannerCarousel";
 
 function Home() {
-  const { width } = WindowDimensions();
   const [{ user }] = useStateValue();
-  const [amazonBanner, setAmazonBanner] = useState("./amazon_banner.jpg");
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(12);
@@ -48,11 +46,7 @@ function Home() {
       }
     };
     updateFavoriteState();
-    if (width < 768) {
-      setAmazonBanner("./amazon_banner_mobile.jpg");
-    } else {
-      setAmazonBanner("./amazon_banner.jpg");
-    }
+
     db.collection("products")
       .orderBy("id", "asc")
       // when cloud firestore sends a snapshot of the data, iterate through it's elements
@@ -68,7 +62,7 @@ function Home() {
 
     // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
     // thus avoiding an infinite loop
-  }, [width, user, currentPage]);
+  }, [user, currentPage]);
 
   useEffect(() => {
     let index;
@@ -101,8 +95,8 @@ function Home() {
 
   return (
     <div className="home">
-      <div className="home__container ">
-        <img className="home__image" src={amazonBanner} alt="" />
+      <div className="home__container overflow-hidden">
+        <BannerCarousel/>
         <div className="home__products">
           <div className="home__bannerContainer">
             <div className="home__banner">
