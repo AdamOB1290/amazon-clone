@@ -10,18 +10,8 @@ import ClickAwayListener from "@material-ui/core/ClickAwayListener";
 import Paper from "@material-ui/core/Paper";
 import Popper from "@material-ui/core/Popper";
 import MenuList from "@material-ui/core/MenuList";
-import { makeStyles } from "@material-ui/core/styles";
 
 var Highlight = require("react-highlighter");
-
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: "flex",
-  },
-  paper: {
-    marginRight: theme.spacing(2),
-  },
-}));
 
 function Header() {
   const history = useHistory();
@@ -35,7 +25,6 @@ function Header() {
   const options = useRef([]);
   const ITEM_HEIGHT = 48;
   const [productRatings, setProductRatings] = useState([]);
-  // const [userRating, setUserRating] = useState(0);
   const userRating = useRef(0);
   const [open, setOpen] = useState(false);
   const [openUserOptions, setOpenUserOptions] = useState(false);
@@ -160,7 +149,6 @@ function Header() {
       const price = selectedProduct.data.price;
       const rating = userRating.current;
       const avgRating = selectedProduct.data.avgRating;
-      // console.log(docId, id, title, image, price, avgRating, rating, productRatings);
       history.push({
         pathname: "/product/" + docId,
         state: {
@@ -180,7 +168,7 @@ function Header() {
       setProductRatings([]);
     }
   };
-  let i = 0
+  // let i = 0
 
 // USERNAME IS SET IN USER OBJECT BUT IT SAYS UNDEFINED WHY ?
 
@@ -252,7 +240,7 @@ function Header() {
                       <MenuItem>
                         <Link
                           onClick={handleAuthenticaton}
-                          to={!user && "/login"}
+                          to={!user ? "/login" : ''}
                         >
                           <span className="text-red-600 font-semibold">
                             {user ? "Sign Out" : "Sign In"}

@@ -15,23 +15,34 @@ textarea:focus {
   max-width: 1200px;
 }
 
+.product__wrapper .MuiPaper-root {
+  margin: 0px auto;
+  overflow: visible;
+  box-shadow: unset !important;
+}
 .product__wrapper .MuiCardHeader-title {
   font-weight: bold !important;
 }
-.product__wrapper .MuiPaper-elevation1 {
-  box-shadow: unset !important;
-}
+
 .product__wrapper .MuiCardHeader-root {
   padding-bottom: 0px !important;
   text-transform: capitalize;
 }
-.product__wrapper .MuiBox-root-5  {
+.product__wrapper .MuiBox-root-5 {
   margin-bottom: 0 !important;
   padding-top: 4px !important;
 }
 
 @media (min-width: 768px) {
-    .product__wrapper .MuiCard-root {
-      width: 50%;
+  .product__wrapper .MuiPaper-root {
+    margin: 10px 20px;
+    max-width: 350px;
+    width: 50%;
+    box-shadow: 0px 2px 1px -1px rgba(0, 0, 0, 0.2),
+      0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12) !important;
+  }
+  .product__wrapper .MuiPaper-root img {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
   }
 }

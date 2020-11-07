@@ -28,7 +28,7 @@ function CheckoutProduct({
   const useStyles = makeStyles((theme) => ({
     root: {
       display: "flex",
-      // maxWidth: "74%",
+      // maxWidth: "400px",
       // heigth: 260,
     },
     details: {
@@ -63,7 +63,7 @@ function CheckoutProduct({
   };
 
   return (
-    <Card className={classes.root + " w-full my-6 lg:w-9/12"}>
+    <Card className={classes.root + " my-6 w-full lg:w-9/12 mr-2"}>
       <img
         className="object-contain w-40 h-40 sm:w-56 sm:h-56"
         onClick={goToProduct}
@@ -72,25 +72,33 @@ function CheckoutProduct({
       />
       <div className={classes.details}>
         <CardContent className={classes.content}>
-          <h6
-            className="checkoutProduct__title text-md sm:text-xl font-semibold capitalize"
-            onClick={goToProduct}
+          <Tooltip
+            title={<span classeName="text-2xl capitalize">{title}</span>}
+            interactive
+            placement="top-start"
           >
-            {title}
-          </h6>
+            <h6
+              className="checkoutProduct__title text-md sm:text-xl font-semibold capitalize"
+              onClick={goToProduct}
+            >
+              {title}
+            </h6>
+          </Tooltip>
           <div className="price_removeBtn_div flex justify-between sm:block ">
             <span className="checkoutProduct__price text-xl">
               <small>$</small>
               <strong>{price}</strong>
             </span>
-            <Tooltip title={"Remove from basket"} arrow interactive>
-              <button
-                className=" remove_cart_up sm:hidden bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-2 rounded button_effect border my-2 mr-2 ml-auto"
-                onClick={removeFromBasket}
-              >
-                <RemoveShoppingCart />
-              </button>
-            </Tooltip>
+            {!hideButton && (
+              <Tooltip title={"Remove from basket"} arrow interactive>
+                <button
+                  className=" remove_cart_up sm:hidden bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-2 rounded button_effect border my-2 mr-2 ml-auto"
+                  onClick={removeFromBasket}
+                >
+                  <RemoveShoppingCart />
+                </button>
+              </Tooltip>
+            )}
           </div>
           <Tooltip title={"average rating: " + rating + " ★"} arrow interactive>
             <Box component="fieldset" mb={1} borderColor="transparent" mt={0.5}>
@@ -104,15 +112,17 @@ function CheckoutProduct({
             </Box>
           </Tooltip>
         </CardContent>
-        <CardActions className={classes.actions}>
-          <button
-            className=" remove_cart_down hidden sm:block bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-2 rounded button_effect border my-2 mr-2 ml-auto"
-            onClick={removeFromBasket}
-          >
-            <RemoveShoppingCart />
-          </button>
-        </CardActions>
-        <div className=""></div>
+        {console.log(hideButton)}
+        {!hideButton && (
+          <CardActions className={classes.actions}>
+            <button
+              className=" remove_cart_down hidden sm:block bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 px-2 rounded button_effect border my-2 mr-2 ml-auto"
+              onClick={removeFromBasket}
+            >
+              <RemoveShoppingCart />
+            </button>
+          </CardActions>
+        )}
       </div>
     </Card>
   );

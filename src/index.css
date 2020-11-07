@@ -21,6 +21,19 @@ code {
     monospace;
 }
 
+::-webkit-scrollbar {
+  width: 6px!important;
+  height: 6px!important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.09);
+}
+
 .a-divider.a-divider-section .a-divider-inner {
   height: 44px;
   margin-bottom: -18px;

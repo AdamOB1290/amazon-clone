@@ -276,12 +276,14 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
       <CardHeader
         className={classes.header}
         title={
-          <p
-            className="product__title text-sm font-semibold cursor-pointer hover:text-orange-600 capitalize"
-            onClick={goToProduct}
-          >
-            {title}
-          </p>
+          <Tooltip classes={{tooltip : "capitalize"}} title={title} interactive placement="top-start" fontSize={50}>
+            <p
+              className="product__title text-sm font-semibold cursor-pointer hover:text-orange-600 capitalize"
+              onClick={goToProduct}
+            >
+              {title}
+            </p>
+          </Tooltip>
         }
         subheader={
           <p className="product__price">

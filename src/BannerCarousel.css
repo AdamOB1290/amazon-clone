@@ -1,0 +1,15 @@
+.background_banner_wrapper {
+  width: 100vw;
+  z-index: -1;
+}
+.background_banner_wrapper .slick-list {
+    overflow: visible;
+}
+.background_banner_wrapper .slick-prev {
+  left: 20px;
+  z-index: 1;
+}
+.background_banner_wrapper .slick-next {
+  right: 20px;
+}
+

@@ -39,16 +39,14 @@ function Orders() {
         className="py-5 sm:px-10 sm:p-10 w-full rounded shadow"
         style={{ background: "#edf2f747" }}
       >
-        <Card className="px-8 py-2 mb-3 flex justify-between items-center">
-          <h1 className="text-3xl font-semibold">Your Orders</h1>
-          <span className="text-base font-semibold">
-            Nb° : {orders?.length}
-          </span>
+        <Card className="px-8 py-2 mb-3 flex justify-between items-center font-semibold">
+          <h1 className="text-3xl ">Your Orders</h1>
+          <span className="text-xl">Nb° : {orders?.length}</span>
         </Card>
         <div className="orders__order">
           {orders?.map((order, i) => (
-            <Card>
-              <Order key={i} order={order} />
+            <Card key={i}>
+              <Order  order={order} />
             </Card>
           ))}
         </div>
