@@ -16,9 +16,7 @@ import { db } from "./firebase";
 import { Seeder } from "./Seeder";
 import Footer from "./Footer";
 
-const promise = loadStripe(
-  "pk_test_51HgVYiAIBAA5hYYSSH3LfZiqhJBPyhGCSuPemKQMRk2zPyUDJsGvZ3BAUIwv6wYmu8bnMp4yjAxPzyfanX4sHQbv009oXf5SmV"
-);
+const promise = loadStripe("****REMOVED****");
 
 function App() {
   // const [username, setUsername] = useState();
@@ -26,7 +24,6 @@ function App() {
 
   // will only run once when the app component loads...
   useEffect(() => {
-
     // uncomment to seed products:
     // Seeder()
 
@@ -37,13 +34,13 @@ function App() {
           const doc = db.collection("users").doc(authUser?.uid);
           const docReady = await doc.get();
           if (!docReady.exists) {
-            console.log('No such document!');
+            console.log("No such document!");
           } else {
             // console.log('Document data:', docReady.data().username);
-            authUser.username = docReady.data().username
+            authUser.username = docReady.data().username;
           }
-      })();
-        
+        })();
+
         // the user just logged in / the user was logged in
         dispatch({
           type: "SET_USER",
