@@ -18,6 +18,7 @@ function Header() {
   const [rootUrl, setRootUrl] = useState("http://localhost:3000/");
   const [{ basket, user, username }, dispatch] = useStateValue();
   const [products, setProducts] = useState([]);
+  const [userBasket, setuserBasket] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [typedProduct, setTypedProduct] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -49,7 +50,16 @@ function Header() {
 
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
+
   useEffect(() => {
+    effect
+    return () => {
+      cleanup
+    }
+  }, [input])
+
+  useEffect(() => {
+
     if (selectedProduct) {
       db.collection("products")
         // get the specific product
@@ -168,23 +178,7 @@ function Header() {
       setProductRatings([]);
     }
   };
-  // let i = 0
-
-// USERNAME IS SET IN USER OBJECT BUT IT SAYS UNDEFINED WHY ?
-
-  // async function waitForElement() {
-  //   i = i+1
-  //   if (typeof user?.username !== "undefined") {
-  //     //variable exists, do what you want
-  //     console.log(username, user?.email, user?.uid);
-  //   } else {
-  //     console.log(i+' loops')
-  //     console.log(user?.username, user)
-  //     setTimeout(waitForElement, 5000);
-  //   }
-  // }
-  // waitForElement()
-
+  
   return (
     <nav className="header w-full">
       <div className="header__containerSmall ">
@@ -376,10 +370,10 @@ function Header() {
           </div>
         </div>
         <div className="header__nav justify-evenly">
-          <Link to={!user && "/login"}>
+          <Link to={user ? "/" : "/login"}>
             <div onClick={handleAuthenticaton} className="header__option">
               <span className="header__optionLineOne">
-                Hello {!user ? "Guest" : user?.email}
+                Hello {!user ? "Guest" : username}
               </span>
               <span className="header__optionLineTwo">
                 {user ? "Sign Out" : "Sign In"}

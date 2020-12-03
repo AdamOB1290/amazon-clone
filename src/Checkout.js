@@ -8,46 +8,62 @@ import SlickCarousel from "./SlickCarousel";
 import { db } from "./firebase";
 
 function Checkout() {
-  const [{ basket, user }] = useStateValue();
+  const [{ basket, user }, dispatch] = useStateValue();
   const location = useLocation();
-  console.log(basket);
 
-  // NEED TO CONNECT DATABASE WITH BASKET SO THAT THEY ARE ALWAYS LINKED
-  useEffect(() => {
-    console.log(basket);
-    // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
-    if (user) {
-      async function getMultiple() {
-        // [START get_multiple]
-        const basketColl = db
-          .collection("users")
-          .doc(user?.uid)
-          .collection("basket");
-        const snapshot = await basketColl.get();
-        // if (snapshot.empty) {
-        //   console.log("No matching collection.");
-        //   return;
-        // }
+  // useEffect(() => {
+  //   // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
+  //   if (user) {
+  //     async function getBasket() {
+  //       const basketCollection = db
+  //         .collection("users")
+  //         .doc(user?.uid)
+  //         .collection("basket");
+  //       const snapshot = await basketCollection.get();
+  //       if (snapshot.empty) {
+  //         console.log("No matching basket collection.");
+  //         return;
+  //       }
 
-        snapshot.forEach((doc) => {
-          // console.log(doc.id, "=>", doc.data());
-        });
-        // [END get_multiple]
-        if (basket) {
-          basket.forEach((product, i) => {
-            basketColl.doc(product.docId).set({
-              id: product.id,
-              title: product.title,
-              price: product.price,
-              rating: product.rating,
-              image: product.image,
-            });
-          });
-        }
-      }
-      getMultiple();
-    }
-  });
+  //       snapshot.forEach((doc) => {
+  //         console.log("basketsnapshot", doc.id, "=>", doc.data());
+
+  //         // dispatch({
+  //         //   type: "ADD_TO_BASKET",
+  //         //   item: {
+  //         //     id: doc?.id,
+  //         //     title: doc?.title,
+  //         //     image: doc?.image,
+  //         //     price: doc?.price,
+  //         //     rating: doc?.rating,
+  //         //   },
+  //         // });
+  //       });
+  //     }
+  //     getBasket();
+  //   }
+  // }, [user]);
+
+  // useEffect(() => {
+  //   if (user && basket) {
+  //     const basketCollection = db
+  //       .collection("users")
+  //       .doc(user?.uid)
+  //       .collection("basket");
+  //     basket.forEach((product, i) => {
+  //       basketCollection.doc(product?.docId).set({
+  //         id: product?.id,
+  //         title: product?.title,
+  //         price: product?.price,
+  //         rating: product?.rating,
+  //         image: product?.image,
+  //       });
+  //     });
+  //   }
+  //   // return () => {
+
+  //   // }
+  // }, [user, basket]);
 
   return (
     <div className="checkout flex flex-col w-10/12 mx-auto">

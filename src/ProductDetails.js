@@ -183,7 +183,7 @@ function ProductDetails() {
           console.log("null");
           break;
         default:
-          console.log("no match found");
+          console.log("no ratings match found");
       }
     });
 
@@ -195,16 +195,19 @@ function ProductDetails() {
   };
 
   const addToBasket = () => {
+    console.log('product', product);
     // dispatch the item into the data layer
     dispatch({
       type: "ADD_TO_BASKET",
       item: {
+        docId: productId,
         id: product?.id,
         title: product?.title,
         image: product?.image,
         price: product?.price,
         rating: avgRating,
       },
+      authUser: user,
     });
   };
 

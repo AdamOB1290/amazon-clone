@@ -1,7 +1,9 @@
+import { db } from "./firebase";
+
 export const initialState = {
   basket: [],
   user: null,
-  username:null
+  username: null,
 };
 
 //   Selector
@@ -14,9 +16,20 @@ export const getStarTotal = (array) =>
   array?.reduce((amount, item) => item + amount, 0);
 
 const reducer = (state, action) => {
-  // console.log(action);
   switch (action.type) {
     case "ADD_TO_BASKET":
+      console.log("reduceruser", action.item);
+      const basketCollection = db
+        .collection("users")
+        .doc(action?.authUser?.uid)
+        .collection("basket");
+      basketCollection.doc(action?.item.docId).set({
+        id: action?.item.id,
+        title: action?.item.title,
+        price: action?.item.price,
+        rating: action?.item.rating,
+        image: action?.item.image,
+      });
       return {
         ...state,
         basket: [...state.basket, action.item],
@@ -48,18 +61,6 @@ const reducer = (state, action) => {
       };
 
     case "SET_USER":
-      console.log('state', state);
-      console.log('action', action);
-      function waitForUsername() {
-        // Wait for username to be set then dispatch
-        // if (typeof authUser.username !== "undefined") {
-
-        // } else {
-        //   console.log('waiting');
-        //   setTimeout(waitForUsername, 5000);
-        // }
-      }
-      waitForUsername()
       return {
         ...state,
         user: action.user,

@@ -159,6 +159,7 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
         price: price,
         rating: avgRating,
       },
+      authUser: user,
     });
   }
 
@@ -174,7 +175,7 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
       const snapshot = await favorited.get();
       // IF THERE IS NO COLLECTION, SAVE PRODUCT TO FAVORITE LIST AND SETSAVED TO TRUE
       if (snapshot.empty) {
-        console.log("No matching collection.");
+        console.log("No matching SAVE PRODUCT collection.");
         favorited
           .doc(docId)
           .set({
@@ -224,7 +225,7 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
       // IF THERE IS NO COLLECTION STOP PROCESS
 
       if (snapshot.empty) {
-        console.log("No matching collection.");
+        console.log("No matching SaveProduct collection.");
         return;
       }
 
