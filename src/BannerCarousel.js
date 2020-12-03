@@ -22,6 +22,8 @@ export const BannerCarousel = () => {
     "./amazon_banner9.jpg",
   ]);
   var settings = {
+    autoplay: true,
+    autoplaySpeed: 2000,
     dots: false,
     arrows: true,
     infinite: true,

@@ -16,7 +16,9 @@ import { db } from "./firebase";
 import { Seeder } from "./Seeder";
 import Footer from "./Footer";
 
-const promise = loadStripe("****REMOVED****");
+const promise = loadStripe(
+  "pk_test_51HaKtxLmKNc2Zf4wDfcQFoGnnnscwR9HqL0glyL8MntlsM8TOEd57huVdqfDibRWMacgpx93VegqTQQnyFko27QC00hzj4CV37"
+);
 
 function App() {
   // const [username, setUsername] = useState();
@@ -34,18 +36,16 @@ function App() {
           const doc = db.collection("users").doc(authUser?.uid);
           const docReady = await doc.get();
           if (!docReady.exists) {
-            console.log("No such document!");
+            console.log("This user doesn't exist!");
           } else {
-            // console.log('Document data:', docReady.data().username);
-            authUser.username = docReady.data().username;
+            // the user just logged in / the user was logged in
+            dispatch({
+              type: "SET_USER",
+              user: authUser,
+              username: docReady.data().username,
+            });
           }
         })();
-
-        // the user just logged in / the user was logged in
-        dispatch({
-          type: "SET_USER",
-          user: authUser,
-        });
       } else {
         // the user is logged out
         dispatch({

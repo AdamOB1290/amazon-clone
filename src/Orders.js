@@ -8,6 +8,8 @@ import SlickCarousel from "./SlickCarousel";
 import { Card } from "@material-ui/core";
 
 function Orders() {
+  console.log('testorders');
+
   const [{ basket, user }, dispatch] = useStateValue();
   const [orders, setOrders] = useState([]);
   const location = useLocation();

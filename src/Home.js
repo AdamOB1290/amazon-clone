@@ -32,7 +32,7 @@ function Home() {
           .collection("favorited");
         const snapshot = await favorites.get();
         if (snapshot.empty) {
-          console.log("No matching collection.");
+          console.log("No matching favorite collection.");
           return;
         }
 
