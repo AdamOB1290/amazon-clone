@@ -1,5 +1,5 @@
 .background_banner_wrapper {
-  width: 100vw;
+  /* width: 100vw; */
   z-index: -1;
 }
 .background_banner_wrapper .slick-list {

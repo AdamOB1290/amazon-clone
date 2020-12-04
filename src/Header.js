@@ -18,7 +18,7 @@ function Header() {
   const [rootUrl, setRootUrl] = useState("http://localhost:3000/");
   const [{ basket, user, username }, dispatch] = useStateValue();
   const [products, setProducts] = useState([]);
-  const [userBasket, setuserBasket] = useState([]);
+  // const [userBasket, setuserBasket] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [typedProduct, setTypedProduct] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -50,13 +50,6 @@ function Header() {
 
   // return focus to the button when we transitioned from !open -> open
   const prevOpen = useRef(open);
-
-  useEffect(() => {
-    effect
-    return () => {
-      cleanup
-    }
-  }, [input])
 
   useEffect(() => {
 

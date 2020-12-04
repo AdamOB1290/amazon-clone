@@ -5,6 +5,7 @@ import CheckoutProduct from "./CheckoutProduct";
 import CurrencyFormat from "react-currency-format";
 
 function Order({ order }) {
+  console.log();
   return (
     <div className="order">
       <h2 className="text-xl font-semibold">
@@ -20,6 +21,7 @@ function Order({ order }) {
         {order.data.basket?.map((item, i) => (
           <CheckoutProduct
             key={i}
+            docId={order.id}
             id={item.id}
             title={item.title}
             image={item.image}

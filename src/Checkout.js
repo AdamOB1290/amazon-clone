@@ -8,62 +8,48 @@ import SlickCarousel from "./SlickCarousel";
 import { db } from "./firebase";
 
 function Checkout() {
-  const [{ basket, user }, dispatch] = useStateValue();
+  const [{ basket, user, username }, dispatch] = useStateValue();
+  // const [userBasket, setuserBasket] = useState([]);
+
   const location = useLocation();
 
-  // useEffect(() => {
-  //   // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
-  //   if (user) {
-  //     async function getBasket() {
-  //       const basketCollection = db
-  //         .collection("users")
-  //         .doc(user?.uid)
-  //         .collection("basket");
-  //       const snapshot = await basketCollection.get();
-  //       if (snapshot.empty) {
-  //         console.log("No matching basket collection.");
-  //         return;
-  //       }
+  useEffect(() => {
+    // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
+    if (user) {
+      async function getBasket() {
+        const basketCollection = db
+          .collection("users")
+          .doc(user?.uid)
+          .collection("basket");
+        const snapshot = await basketCollection.get();
+        if (snapshot.empty) {
+          console.log("No matching basket collection.");
+          return;
+        }
+        snapshot.forEach((doc) => {
+          console.log("basketsnapshot", doc.id, "=>", doc.data());
+          const basketProduct = doc.data()
+          for (let index = 0; index < doc.data().quantity; index++) {
+            dispatch({
+              type: "ADD_TO_BASKET",
+              item: {
+                docId: doc.id,
+                id: basketProduct.id,
+                title: basketProduct.title,
+                image: basketProduct.image,
+                price: basketProduct.price,
+                rating: basketProduct.rating,
+              },
+            });
+          }
+        });
+      }
 
-  //       snapshot.forEach((doc) => {
-  //         console.log("basketsnapshot", doc.id, "=>", doc.data());
-
-  //         // dispatch({
-  //         //   type: "ADD_TO_BASKET",
-  //         //   item: {
-  //         //     id: doc?.id,
-  //         //     title: doc?.title,
-  //         //     image: doc?.image,
-  //         //     price: doc?.price,
-  //         //     rating: doc?.rating,
-  //         //   },
-  //         // });
-  //       });
-  //     }
-  //     getBasket();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   if (user && basket) {
-  //     const basketCollection = db
-  //       .collection("users")
-  //       .doc(user?.uid)
-  //       .collection("basket");
-  //     basket.forEach((product, i) => {
-  //       basketCollection.doc(product?.docId).set({
-  //         id: product?.id,
-  //         title: product?.title,
-  //         price: product?.price,
-  //         rating: product?.rating,
-  //         image: product?.image,
-  //       });
-  //     });
-  //   }
-  //   // return () => {
-
-  //   // }
-  // }, [user, basket]);
+      if (basket?.length === 0) {
+        getBasket();
+      }
+    }
+  }, [user]);
 
   return (
     <div className="checkout flex flex-col w-10/12 mx-auto">
@@ -81,7 +67,7 @@ function Checkout() {
               src="https://images-na.ssl-images-amazon.com/images/G/02/UK_CCMP/TM/OCC_Amazon1._CB423492668_.jpg"
               alt=""
             />
-            <h3 className="font-semibold">Hello, {user?.email}</h3>
+            <h3 className="font-semibold">Hello, {username}</h3>
             <h2 className="checkout__title font-semibold mt-2 mr-3 mb-4 lg:mb-3">
               Your shopping Basket
             </h2>

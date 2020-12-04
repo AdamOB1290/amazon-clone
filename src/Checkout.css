@@ -25,6 +25,14 @@
   display: none;
 }
 
+.checkout .checkout__wrapper {
+  max-height: 760px;
+  overflow-y: scroll;
+  margin-bottom: 5px;
+  /* background: #ebeef05d; */
+}
+
+
 @media screen and (max-width: 406px) {
   .checkout__basket,
   .carousel__title {

@@ -16,9 +16,7 @@ import { db } from "./firebase";
 import { Seeder } from "./Seeder";
 import Footer from "./Footer";
 
-const promise = loadStripe(
-  "pk_test_51HaKtxLmKNc2Zf4wDfcQFoGnnnscwR9HqL0glyL8MntlsM8TOEd57huVdqfDibRWMacgpx93VegqTQQnyFko27QC00hzj4CV37"
-);
+const promise = loadStripe("****REMOVED****");
 
 function App() {
   // const [username, setUsername] = useState();

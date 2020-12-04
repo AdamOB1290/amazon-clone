@@ -96,7 +96,7 @@ function Home() {
   return (
     <div className="home">
       <div className="home__container overflow-hidden">
-        <BannerCarousel/>
+        <BannerCarousel />
         <div className="home__products">
           <div className="home__bannerContainer">
             <div className="home__banner">
@@ -104,19 +104,19 @@ function Home() {
               millions of products with fast local delivery.
             </div>
           </div>
-          {currentProducts?.map((product, i) => (
-            <Product
-              key={i}
-              docId={product.id}
-              id={product.data.id}
-              title={product.data.title}
-              brand={product.data.brand}
-              price={product.data.price}
-              rating={product.data.rating}
-              image={product.data.image}
-              savedProp={product?.saved}
-            />
-          ))}
+            {currentProducts?.map((product, i) => (
+              <Product
+                key={i}
+                docId={product.id}
+                id={product.data.id}
+                title={product.data.title}
+                brand={product.data.brand}
+                price={product.data.price}
+                rating={product.data.rating}
+                image={product.data.image}
+                savedProp={product?.saved}
+              />
+            ))}
         </div>
         <div className="w-full flex my-5">
           <Pagination

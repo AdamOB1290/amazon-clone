@@ -50,7 +50,7 @@ function ProductDetails() {
 
   const firebase = require("firebase");
 
-  const [{ user }, dispatch] = useStateValue();
+  const [{ user, username }, dispatch] = useStateValue();
 
   const [productRatings, setProductRatings] = useState([]);
 
@@ -195,20 +195,40 @@ function ProductDetails() {
   };
 
   const addToBasket = () => {
-    console.log('product', product);
-    // dispatch the item into the data layer
-    dispatch({
-      type: "ADD_TO_BASKET",
-      item: {
-        docId: productId,
-        id: product?.id,
-        title: product?.title,
-        image: product?.image,
-        price: product?.price,
-        rating: avgRating,
-      },
-      authUser: user,
-    });
+    const basketCollection = db
+      .collection("users")
+      .doc(user?.uid)
+      .collection("basket");
+
+    basketCollection
+      .doc(productId)
+      .set(
+        {
+          id: product?.id,
+          title: product?.title,
+          price: product?.price,
+          rating: avgRating,
+          image: product?.image,
+          quantity: firebase.firestore.FieldValue.increment(1),
+        },
+        { merge: true }
+      )
+      .then(() => {
+        console.log("ADD TO BASKET SUCCESS");
+        // dispatch the item into the data layer
+        dispatch({
+          type: "ADD_TO_BASKET",
+          item: {
+            docId: productId,
+            id: product?.id,
+            title: product?.title,
+            image: product?.image,
+            price: product?.price,
+            rating: avgRating,
+          },
+        });
+      })
+      .catch(() => console.log("ADD TO BASKET FAILED"));
   };
 
   const updateRating = (productIdParam) => {
@@ -247,7 +267,7 @@ function ProductDetails() {
           .doc(user.uid)
           .set(
             {
-              username: user.username,
+              username: username,
               review: review,
               created_at: firebase.firestore.FieldValue.serverTimestamp(),
             },
@@ -470,7 +490,7 @@ function ProductDetails() {
                 </DialogContentText>
                 <div className="w-full flex justify-between items-center">
                   <FacebookShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
@@ -481,7 +501,7 @@ function ProductDetails() {
                     />
                   </FacebookShareButton>
                   <FacebookMessengerShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
@@ -492,28 +512,28 @@ function ProductDetails() {
                     />
                   </FacebookMessengerShareButton>
                   <EmailShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
                     <EmailIcon logoFillColor="white" size={40} round={true} />
                   </EmailShareButton>
                   <RedditShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
                     <RedditIcon logoFillColor="white" size={40} round={true} />
                   </RedditShareButton>
                   <TwitterShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
                     <TwitterIcon logoFillColor="white" size={40} round={true} />
                   </TwitterShareButton>
                   <WhatsappShareButton
-                    url="someurl"
+                    url={"http://localhost:3000" + location.pathname}
                     quote={"Buy this product now by clicking on the link"}
                     hashtag="#amazonClone"
                   >
@@ -566,7 +586,7 @@ function ProductDetails() {
         <div className="body__reviews flex flex-col md:flex-row px-5 md:px-20 mt-5">
           <div className="ratings">
             <h1 className="text-lg font-semibold ">
-              Ratings{" "}
+              Ratings
               <span className="text-sm">
                 (
                 {location?.state?.productRatings
@@ -627,7 +647,7 @@ function ProductDetails() {
               </ul>
             </div>
           </div>
-          <div className="ratings flex flex-col w-full md:ml-10 lg:ml-20">
+          <div className="flex flex-col w-full md:ml-10 lg:ml-20">
             {!reviewed ? (
               <form
                 onSubmit={addReview}
@@ -652,8 +672,8 @@ function ProductDetails() {
                           <span className="underline font-bold text-red-600">
                             Sign In
                           </span>
-                        </Link>
-                        {" "}before you can submit a review !
+                        </Link>{" "}
+                        before you can submit a review !
                       </span>
                     ) : (
                       <span>

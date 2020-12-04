@@ -1,6 +1,7 @@
 .footer {
   width: 100%;
   min-width: 385px;
+  margin-top: 20px;
 }
 .footer__links {
   background-color: #232f3e;

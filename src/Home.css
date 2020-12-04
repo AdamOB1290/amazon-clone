@@ -22,7 +22,7 @@
 }
 
 .home__bannerContainer {
-  width: 96%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,7 +34,7 @@
   align-items: center;
   color: white;
   z-index: 1;
-  width: 100%;
+  width: 96%;
   height: fit-content;
   background-color: #232F3E;
   padding: 10px !important;
