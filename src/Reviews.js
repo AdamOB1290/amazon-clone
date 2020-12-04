@@ -47,20 +47,22 @@ export default function Reviews({ setReviewed, setReview, productId }) {
       });
   }, [productId]);
 
-  if (!editClicked) {
-    if (reviews.length > 0) {
-      reviews.forEach((review) => {
-        if (review.id == user?.uid) {
-          setReviewed(true);
-        }
-      });
-    } else {
-      setReviewed(false);
+  useEffect(() => {
+    if (!editClicked) {
+      if (reviews.length > 0) {
+        reviews.forEach((review) => {
+          if (review.id == user?.uid) {
+            setReviewed(true);
+          }
+        });
+      } else {
+        setReviewed(false);
+      }
     }
-  }
+  }, [editClicked]);
 
   return (
-    <div>
+    <div className="mb-6">
       <h1 className="font-semibold text-2xl mb-5">Reviews</h1>
       <div className=" w-full">
         {reviews?.map((reviewer, i) => (
@@ -69,7 +71,9 @@ export default function Reviews({ setReviewed, setReview, productId }) {
               <div className="w-full flex items-center">
                 <div className="mr-2 font-bold">{reviewer.username}</div>
                 <Tooltip
-                  title={reviewer.rating == null ? 0 + " ★" : reviewer.rating + " ★"}
+                  title={
+                    reviewer.rating == null ? 0 + " ★" : reviewer.rating + " ★"
+                  }
                   placement="top"
                   arrow
                   interactive
@@ -95,7 +99,9 @@ export default function Reviews({ setReviewed, setReview, productId }) {
                   reviewContent={reviewer.review}
                   setReviewed={setReviewed}
                 />
-              ): ""}
+              ) : (
+                ""
+              )}
             </div>
             <div className="mb-2 break-all">
               <span>{reviewer.review}</span>

@@ -13,16 +13,65 @@ function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
   const history = useHistory();
 
+  const firebase = require("firebase");
+
   const stripe = useStripe();
+
   const elements = useElements();
 
   const [succeeded, setSucceeded] = useState(false);
+
   const [processing, setProcessing] = useState("");
+
   const [error, setError] = useState(null);
+
   const [disabled, setDisabled] = useState(true);
+
   const [clientSecret, setClientSecret] = useState(true);
 
   useEffect(() => {
+    console.log("BASKETPAYMENT", basket, user);
+    // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
+    if (user) {
+      async function getBasket() {
+        const basketCollection = db
+          .collection("users")
+          .doc(user?.uid)
+          .collection("basket");
+        console.log("PATH", basketCollection);
+        const snapshot = await basketCollection.get();
+        if (snapshot.empty) {
+          console.log("No matching basket collection.");
+          return;
+        }
+
+        snapshot.forEach((doc) => {
+          console.log("basketsnapshot", doc.id, "=>", doc.data());
+          const basketProduct = doc.data();
+          for (let index = 0; index < doc.data().quantity; index++) {
+            dispatch({
+              type: "ADD_TO_BASKET",
+              item: {
+                docId: doc.id,
+                id: basketProduct.id,
+                title: basketProduct.title,
+                image: basketProduct.image,
+                price: basketProduct.price,
+                rating: basketProduct.rating,
+              },
+            });
+          }
+        });
+      }
+
+      if (basket?.length === 0) {
+        getBasket();
+      }
+
+      ////////////////////////////////////////////////////////////
+    }
+    /////////////////////////////////////////////////////////////
+
     console.log("THE SECRET before IS >>>", clientSecret);
 
     // console.log(basket);
@@ -31,15 +80,15 @@ function Payment() {
       const response = await axios({
         method: "post",
         // Stripe expects the total in a currencies subunits
-        url: `/payments/create?total=${getBasketTotal(basket) * 100}`, 
+        url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
       });
-      console.log('client secret', response.data.clientSecret);
+      console.log("client secret", response.data.clientSecret);
       setClientSecret(response.data.clientSecret);
-      console.log('total', getBasketTotal(basket) * 100);
+      console.log("total", getBasketTotal(basket) * 100);
     };
 
     getClientSecret();
-  }, [basket]);
+  }, [user, basket]);
 
   console.log("THE SECRET after IS >>>", clientSecret);
   // console.log('👱', user)
@@ -71,14 +120,33 @@ function Payment() {
         setSucceeded(true);
         setError(null);
         setProcessing(false);
-
-        dispatch({
-          type: "EMPTY_BASKET",
-        });
-
+        deleteCollection();
         // Use history.replace() instead of history.push() to prevent user from going back to paiement page once the paiement was processed
         history.replace("/orders");
       });
+  };
+
+  const deleteCollection = async () => {
+    const basketCollection = db
+      .collection("users")
+      .doc(user?.uid)
+      .collection("basket");
+    const snapshot = await basketCollection.get();
+    if (snapshot.empty) {
+      console.log("No matching basket collection.");
+      return;
+    }
+    snapshot.forEach((doc) => {
+      basketCollection.doc(doc.id).delete();
+      console.log(snapshot.docs.length);
+      if (snapshot.docs.length > 1) {
+        console.log(snapshot.docs.length === 0);
+        dispatch({
+          type: "EMPTY_BASKET",
+        });
+        console.log("EMPTY BASKET SUCCCESS");
+      }
+    });
   };
 
   const handleChange = (event) => {
@@ -116,6 +184,7 @@ function Payment() {
             {basket.map((item, i) => (
               <CheckoutProduct
                 key={i}
+                docId={item.docId}
                 id={item.id}
                 title={item.title}
                 image={item.image}
@@ -139,15 +208,24 @@ function Payment() {
 
               <div className="payment__priceContainer">
                 <CurrencyFormat
-                  renderText={(value) => <h3>Order Total: <span className="font-bold" >{value}</span> </h3>}
+                  renderText={(value) => (
+                    <h3>
+                      Order Total: <span className="font-bold">{value}</span>{" "}
+                    </h3>
+                  )}
                   decimalScale={2}
                   value={getBasketTotal(basket)}
                   displayType={"text"}
                   thousandSeparator={true}
                   prefix={"$"}
                 />
-                <button className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 rounded button_effect border w-full" disabled={processing || disabled || succeeded}>
-                  <span className="font-semibold" >{processing ? <p>Processing</p> : "Buy Now"}</span>
+                <button
+                  className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 rounded button_effect border w-full"
+                  disabled={processing || disabled || succeeded}
+                >
+                  <span className="font-semibold">
+                    {processing ? <p>Processing</p> : "Buy Now"}
+                  </span>
                 </button>
               </div>
 

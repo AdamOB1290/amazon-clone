@@ -46,7 +46,7 @@ export const Pagination = ({
             key={number}
             className={`-ml-px relative cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm leading-5 font-medium focus:z-10 focus:outline-none ${
               currentPage == number
-                ? "bg-blue-600 text-white"
+                ? "bg-yellow-600	 text-white"
                 : "text-gray-700 hover:text-gray-500"
             }`}
           >

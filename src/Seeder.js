@@ -5,7 +5,7 @@ const faker = require("faker");
 global.fetch = fetch;
 
 const unsplash = new Unsplash({
-  accessKey: "BO7UVVZfZ6KFAds692bBUhxSWsYLfl2dik_NaPqcLqk",
+  accessKey: "****REMOVED****",
 });
 
 export const Seeder = () => {
@@ -30,7 +30,6 @@ export const Seeder = () => {
               description = product.description;
             }
 
-
             products.push({
               id: key++,
               title: title,
@@ -43,8 +42,6 @@ export const Seeder = () => {
         });
       });
   }
-
-
 
   setTimeout(() => {
     console.log(products.length);

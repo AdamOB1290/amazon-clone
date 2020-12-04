@@ -1,5 +1,3 @@
-import { db } from "./firebase";
-
 export const initialState = {
   basket: [],
   user: null,
@@ -18,18 +16,6 @@ export const getStarTotal = (array) =>
 const reducer = (state, action) => {
   switch (action.type) {
     case "ADD_TO_BASKET":
-      console.log("reduceruser", action.item);
-      const basketCollection = db
-        .collection("users")
-        .doc(action?.authUser?.uid)
-        .collection("basket");
-      basketCollection.doc(action?.item.docId).set({
-        id: action?.item.id,
-        title: action?.item.title,
-        price: action?.item.price,
-        rating: action?.item.rating,
-        image: action?.item.image,
-      });
       return {
         ...state,
         basket: [...state.basket, action.item],

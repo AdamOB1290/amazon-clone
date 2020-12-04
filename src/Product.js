@@ -51,6 +51,8 @@ import {
 function Product({ docId, id, title, brand, image, price, savedProp }) {
   const history = useHistory();
 
+  const firebase = require("firebase");
+
   const [{ user }, dispatch] = useStateValue();
 
   const [rating, setRating] = useState(0);
@@ -147,21 +149,42 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
   let avgRating = getStarTotal(productRatings) / productRatings.length;
   // console.log(getStarTotal(productRatings), productRatings.length);
 
-  function addToBasket() {
-    // dispatch the item into the data layer
-    dispatch({
-      type: "ADD_TO_BASKET",
-      item: {
-        docId: docId,
-        id: id,
-        title: title,
-        image: image,
-        price: price,
-        rating: avgRating,
-      },
-      authUser: user,
-    });
-  }
+  const addToBasket = async () => {
+    const basketCollection = db
+      .collection("users")
+      .doc(user?.uid)
+      .collection("basket");
+
+    basketCollection
+      .doc(docId)
+      .set(
+        {
+          id: id,
+          title: title,
+          price: price,
+          rating: avgRating,
+          image: image,
+          quantity: firebase.firestore.FieldValue.increment(1),
+        },
+        { merge: true }
+      )
+      .then(() => {
+        console.log("ADD TO BASKET SUCCESS");
+        // dispatch the item into the data layer
+        dispatch({
+          type: "ADD_TO_BASKET",
+          item: {
+            docId: docId,
+            id: id,
+            title: title,
+            image: image,
+            price: price,
+            rating: avgRating,
+          },
+        });
+      })
+      .catch(() => console.log("ADD TO BASKET FAILED"));
+  };
 
   // IF PRODUCT IS SAVED CHANGE COLOR NOT DONE, NEED TO FIGURE OUT A CHECK TO TURN SAVED STATE TO TRUE
   async function saveProduct() {
@@ -277,7 +300,13 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
       <CardHeader
         className={classes.header}
         title={
-          <Tooltip classes={{tooltip : "capitalize"}} title={title} interactive placement="top-start" fontSize={50}>
+          <Tooltip
+            classes={{ tooltip: "capitalize" }}
+            title={title}
+            interactive
+            placement="top-start"
+            fontSize={50}
+          >
             <p
               className="product__title text-sm font-semibold cursor-pointer hover:text-orange-600 capitalize"
               onClick={goToProduct}
@@ -328,14 +357,14 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
               </DialogContentText>
               <div className="w-full flex justify-between items-center">
                 <FacebookShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >
                   <FacebookIcon logoFillColor="white" size={40} round={true} />
                 </FacebookShareButton>
                 <FacebookMessengerShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >
@@ -346,28 +375,28 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
                   />
                 </FacebookMessengerShareButton>
                 <EmailShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >
                   <EmailIcon logoFillColor="white" size={40} round={true} />
                 </EmailShareButton>
                 <RedditShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >
                   <RedditIcon logoFillColor="white" size={40} round={true} />
                 </RedditShareButton>
                 <TwitterShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >
                   <TwitterIcon logoFillColor="white" size={40} round={true} />
                 </TwitterShareButton>
                 <WhatsappShareButton
-                  url="someurl"
+                  url={"http://localhost:3000/product/" + docId}
                   quote={"Buy this product now by clicking on the link"}
                   hashtag="#amazonClone"
                 >

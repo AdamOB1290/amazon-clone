@@ -10,9 +10,9 @@ import {
   CardActions,
   CardContent,
   makeStyles,
-  Typography,
 } from "@material-ui/core";
 import { RemoveShoppingCart } from "@material-ui/icons";
+import { db } from "./firebase";
 
 function CheckoutProduct({
   docId,
@@ -23,8 +23,12 @@ function CheckoutProduct({
   rating,
   hideButton,
 }) {
-  const [{}, dispatch] = useStateValue();
   const history = useHistory();
+
+  const firebase = require("firebase");
+
+  const [{ user }, dispatch] = useStateValue();
+
   const useStyles = makeStyles((theme) => ({
     root: {
       display: "flex",
@@ -46,12 +50,57 @@ function CheckoutProduct({
   }));
   const classes = useStyles();
 
-  const removeFromBasket = () => {
-    // remove the item from the basket
-    dispatch({
-      type: "REMOVE_FROM_BASKET",
-      id: id,
-    });
+  const removeFromBasket = async () => {
+    const basketCollection = db
+      .collection("users")
+      .doc(user?.uid)
+      .collection("basket");
+
+    const docsnapshot = await basketCollection.doc(docId).get();
+    if (!docsnapshot.exists) {
+      console.log("No such document!");
+    } else {
+      console.log("Document data:", docsnapshot.data());
+      const basketProduct = docsnapshot.data();
+      console.log("QUANTITY", basketProduct?.quantity);
+      if (basketProduct?.quantity < 2) {
+        basketCollection
+          .doc(docId)
+          .delete()
+          .then(() => {
+            console.log("successfully deleted");
+            // remove the item from the basket
+            dispatch({
+              type: "REMOVE_FROM_BASKET",
+              id: id,
+            });
+          })
+          .catch(() => console.log("ADD TO BASKET FAILED"));
+      } else {
+        basketCollection
+          .doc(docId)
+          .set(
+            {
+              id: id,
+              title: title,
+              price: price,
+              rating: rating,
+              image: image,
+              quantity: firebase.firestore.FieldValue.increment(-1),
+            },
+            { merge: true }
+          )
+          .then(() => {
+            console.log("ADD TO BASKET SUCCESS");
+            // remove the item from the basket
+            dispatch({
+              type: "REMOVE_FROM_BASKET",
+              id: id,
+            });
+          })
+          .catch(() => console.log("ADD TO BASKET FAILED"));
+      }
+    }
   };
 
   const goToProduct = () => {
@@ -112,7 +161,6 @@ function CheckoutProduct({
             </Box>
           </Tooltip>
         </CardContent>
-        {console.log(hideButton)}
         {!hideButton && (
           <CardActions className={classes.actions}>
             <button
