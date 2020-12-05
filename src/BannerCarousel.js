@@ -23,11 +23,11 @@ export const BannerCarousel = () => {
   ]);
   var settings = {
     autoplay: true,
-    autoplaySpeed: 2000,
+    autoplaySpeed: 3000,
     dots: false,
     arrows: true,
     infinite: true,
-    speed: 500,
+    speed: 1000,
     slidesToShow: 1,
     slidesToScroll: 1,
   };

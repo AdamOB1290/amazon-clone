@@ -5,12 +5,7 @@ import { Rating } from "@material-ui/lab";
 import Box from "@material-ui/core/Box";
 import Tooltip from "@material-ui/core/Tooltip";
 import { useHistory } from "react-router-dom";
-import {
-  Card,
-  CardActions,
-  CardContent,
-  makeStyles,
-} from "@material-ui/core";
+import { Card, CardActions, CardContent, makeStyles } from "@material-ui/core";
 import { RemoveShoppingCart } from "@material-ui/icons";
 import { db } from "./firebase";
 
@@ -51,55 +46,63 @@ function CheckoutProduct({
   const classes = useStyles();
 
   const removeFromBasket = async () => {
-    const basketCollection = db
-      .collection("users")
-      .doc(user?.uid)
-      .collection("basket");
+    if (user) {
+      const basketCollection = db
+        .collection("users")
+        .doc(user?.uid)
+        .collection("basket");
 
-    const docsnapshot = await basketCollection.doc(docId).get();
-    if (!docsnapshot.exists) {
-      console.log("No such document!");
-    } else {
-      console.log("Document data:", docsnapshot.data());
-      const basketProduct = docsnapshot.data();
-      console.log("QUANTITY", basketProduct?.quantity);
-      if (basketProduct?.quantity < 2) {
-        basketCollection
-          .doc(docId)
-          .delete()
-          .then(() => {
-            console.log("successfully deleted");
-            // remove the item from the basket
-            dispatch({
-              type: "REMOVE_FROM_BASKET",
-              id: id,
-            });
-          })
-          .catch(() => console.log("ADD TO BASKET FAILED"));
+      const docsnapshot = await basketCollection.doc(docId).get();
+      if (!docsnapshot.exists) {
+        console.log("No such document!");
       } else {
-        basketCollection
-          .doc(docId)
-          .set(
-            {
-              id: id,
-              title: title,
-              price: price,
-              rating: rating,
-              image: image,
-              quantity: firebase.firestore.FieldValue.increment(-1),
-            },
-            { merge: true }
-          )
-          .then(() => {
-            console.log("ADD TO BASKET SUCCESS");
-            // remove the item from the basket
-            dispatch({
-              type: "REMOVE_FROM_BASKET",
-              id: id,
-            });
-          })
-          .catch(() => console.log("ADD TO BASKET FAILED"));
+        console.log("Document data:", docsnapshot.data());
+        const basketProduct = docsnapshot.data();
+        console.log("QUANTITY", basketProduct?.quantity);
+        if (basketProduct?.quantity < 2) {
+          basketCollection
+            .doc(docId)
+            .delete()
+            .then(() => {
+              console.log("successfully deleted");
+              // remove the item from the basket
+              dispatch({
+                type: "REMOVE_FROM_BASKET",
+                id: id,
+              });
+            })
+            .catch(() => console.log("ADD TO BASKET FAILED"));
+        } else {
+          basketCollection
+            .doc(docId)
+            .set(
+              {
+                id: id,
+                title: title,
+                price: price,
+                rating: rating,
+                image: image,
+                quantity: firebase.firestore.FieldValue.increment(-1),
+              },
+              { merge: true }
+            )
+            .then(() => {
+              console.log("ADD TO BASKET SUCCESS");
+              // remove the item from the basket
+              dispatch({
+                type: "REMOVE_FROM_BASKET",
+                id: id,
+              });
+            })
+            .catch(() => console.log("ADD TO BASKET FAILED"));
+        }
       }
+    } else {
+      // remove the item from the basket
+      dispatch({
+        type: "REMOVE_FROM_BASKET",
+        id: id,
+      });
     }
   };
 

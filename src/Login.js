@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./Login.css";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import { auth } from "./firebase";
 import { db } from "./firebase";
 import { useStateValue } from "./StateProvider";
 
 function Login() {
   const history = useHistory();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -14,14 +15,19 @@ function Login() {
   const [{}, dispatch] = useStateValue();
 
   useEffect(() => {}, [hidden, auth]);
-  
+
   const signIn = (e) => {
     e.preventDefault();
 
     auth
       .signInWithEmailAndPassword(email, password)
       .then((auth) => {
-        history.push("/");
+        if (location?.state?.loginMessage) {
+          history.push("/checkout");
+        } else {
+          history.push("/");
+        }
+        
       })
       .catch((error) => alert(error.message));
   };
@@ -41,7 +47,12 @@ function Login() {
           });
           // it successfully created a new user with email and password
           if (auth) {
-            history.push("/");
+            if (location?.state?.loginMessage) {
+              history.push("/checkout");
+            } else {
+              history.push("/");
+            }
+            
           }
         })
         .catch((error) => alert(error.message));
@@ -54,6 +65,7 @@ function Login() {
         <img
           className="login__logo"
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Amazon_logo.svg/1024px-Amazon_logo.svg.png"
+          alt=""
         />
       </Link>
 
@@ -98,7 +110,7 @@ function Login() {
               onChange={(e) => setUsername(e.target.value)}
             />
           </div>
-          <div className="mb-6">
+          <div className="">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
               htmlFor="password"
@@ -114,7 +126,13 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
+          {location?.state?.loginMessage ? (
+            <span className="text-xs font-semibold text-red-600 text-center mb-2">
+              {location?.state?.loginMessage}
+            </span>
+          ) : (
+            ""
+          )}
           <button
             type="submit"
             onClick={signIn}

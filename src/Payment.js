@@ -8,9 +8,13 @@ import CurrencyFormat from "react-currency-format";
 import { getBasketTotal } from "./reducer";
 import axios from "./axios";
 import { db } from "./firebase";
+import { CircularProgress } from "@material-ui/core";
+import ScaleLoader from "react-spinners/ScaleLoader";
+import Orders from "./Orders";
 
 function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
+
   const history = useHistory();
 
   const firebase = require("firebase");
@@ -29,8 +33,10 @@ function Payment() {
 
   const [clientSecret, setClientSecret] = useState(true);
 
+  const [loader, setloader] = useState(true);
+
   useEffect(() => {
-    console.log("BASKETPAYMENT", basket, user);
+    // console.log("BASKETPAYMENT", basket, user);
     // IF USER IS CONNECTED AND BASKET HAS SOMETHING IN IT, SAVE IT IN THE DATABASE
     if (user) {
       async function getBasket() {
@@ -38,15 +44,16 @@ function Payment() {
           .collection("users")
           .doc(user?.uid)
           .collection("basket");
-        console.log("PATH", basketCollection);
+        // console.log("PATH", basketCollection);
         const snapshot = await basketCollection.get();
+        setloader(false);
         if (snapshot.empty) {
           console.log("No matching basket collection.");
           return;
         }
 
         snapshot.forEach((doc) => {
-          console.log("basketsnapshot", doc.id, "=>", doc.data());
+          // console.log("basketsnapshot", doc.id, "=>", doc.data());
           const basketProduct = doc.data();
           for (let index = 0; index < doc.data().quantity; index++) {
             dispatch({
@@ -66,15 +73,13 @@ function Payment() {
 
       if (basket?.length === 0) {
         getBasket();
+      } else {
+        setloader(false);
       }
-
-      ////////////////////////////////////////////////////////////
     }
-    /////////////////////////////////////////////////////////////
 
-    console.log("THE SECRET before IS >>>", clientSecret);
+    // console.log("THE SECRET before IS >>>", clientSecret);
 
-    // console.log(basket);
     // generate the special stripe secret which allows us to charge a customer
     const getClientSecret = async () => {
       const response = await axios({
@@ -82,15 +87,15 @@ function Payment() {
         // Stripe expects the total in a currencies subunits
         url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
       });
-      console.log("client secret", response.data.clientSecret);
+      // console.log("client secret", response.data.clientSecret);
       setClientSecret(response.data.clientSecret);
-      console.log("total", getBasketTotal(basket) * 100);
+      // console.log("total", getBasketTotal(basket) * 100);
     };
 
     getClientSecret();
   }, [user, basket]);
 
-  console.log("THE SECRET after IS >>>", clientSecret);
+  // console.log("THE SECRET after IS >>>", clientSecret);
   // console.log('👱', user)
 
   const handleSubmit = async (event) => {
@@ -122,7 +127,7 @@ function Payment() {
         setProcessing(false);
         deleteCollection();
         // Use history.replace() instead of history.push() to prevent user from going back to paiement page once the paiement was processed
-        history.replace("/orders");
+        history.replace("/orders/success");
       });
   };
 
@@ -134,19 +139,17 @@ function Payment() {
     const snapshot = await basketCollection.get();
     if (snapshot.empty) {
       console.log("No matching basket collection.");
-      return;
+    } else {
+      snapshot.forEach((doc) => {
+        basketCollection.doc(doc.id).delete();
+        // console.log(snapshot.docs.length);
+      });
     }
-    snapshot.forEach((doc) => {
-      basketCollection.doc(doc.id).delete();
-      console.log(snapshot.docs.length);
-      if (snapshot.docs.length > 1) {
-        console.log(snapshot.docs.length === 0);
-        dispatch({
-          type: "EMPTY_BASKET",
-        });
-        console.log("EMPTY BASKET SUCCCESS");
-      }
+
+    dispatch({
+      type: "EMPTY_BASKET",
     });
+    console.log("EMPTY BASKET SUCCCESS");
   };
 
   const handleChange = (event) => {
@@ -177,24 +180,50 @@ function Payment() {
 
         {/* Payment section - Review Items */}
         <div className="payment__section border-b">
-          <div className="payment__title">
+          <div className="payment__title mr-5">
             <h3 className="font-semibold">Review items and delivery</h3>
           </div>
-          <div className="payment__items">
-            {basket.map((item, i) => (
-              <CheckoutProduct
-                key={i}
-                docId={item.docId}
-                id={item.id}
-                title={item.title}
-                image={item.image}
-                price={item.price}
-                rating={item.rating}
-              />
-            ))}
+          <div className="w-full">
+            {!basket.length > 0 || loader ? (
+              <div
+                className={`mt-5 w-full bg-gray-400 h-64 bg-opacity-25 flex items-center justify-center ${
+                  user && loader ? "animate-pulse" : ""
+                }`}
+              >
+                {user && loader ? (
+                  <div className="sweet-loading opacity-100 bg-opacity-100">
+                    <ScaleLoader
+                      // css={override}
+                      height={50}
+                      color={"#2196f3"}
+                      loading={true}
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-xl font-semibold text-gray-600">
+                      Your basket is empty
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="payment__items">
+                {basket.map((item, i) => (
+                  <CheckoutProduct
+                    key={i}
+                    docId={item.docId}
+                    id={item.id}
+                    title={item.title}
+                    image={item.image}
+                    price={item.price}
+                    rating={item.rating}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-
         {/* Payment section - Payment method */}
         <div className="payment__section">
           <div className="payment__title">
@@ -209,9 +238,12 @@ function Payment() {
               <div className="payment__priceContainer">
                 <CurrencyFormat
                   renderText={(value) => (
-                    <h3>
-                      Order Total: <span className="font-bold">{value}</span>{" "}
-                    </h3>
+                    <div className="my-3">
+                      <span className="font-semibold">Order Total :</span>
+                      <span className="ml-2 font-semibold rounded px-2 py-1 text-green-500 bg-gray-200 leading-none">
+                        {value}
+                      </span>
+                    </div>
                   )}
                   decimalScale={2}
                   value={getBasketTotal(basket)}
@@ -220,11 +252,28 @@ function Payment() {
                   prefix={"$"}
                 />
                 <button
-                  className="mt-2 bg-orange-500 hover:bg-orange-600 focus:outline-none text-gray-800 font-normal py-1 rounded button_effect border w-full"
+                  className={`mt-2 focus:outline-none text-gray-800 font-normal py-1 rounded border w-full ${
+                    processing
+                      ? "bg-gray-400 opacity-50 cursor-not-allowed"
+                      : "button_effect"
+                  }`}
                   disabled={processing || disabled || succeeded}
                 >
                   <span className="font-semibold">
-                    {processing ? <p>Processing</p> : "Buy Now"}
+                    {processing ? (
+                      <div className="flex items-center justify-center relative">
+                        <div className="payment__processing absolute">
+                          <CircularProgress
+                            size={15}
+                            style={{ color: "gray" }}
+                          />
+                        </div>
+
+                        <span className="mb-1 ml-3">Processing</span>
+                      </div>
+                    ) : (
+                      "Buy Now"
+                    )}
                   </span>
                 </button>
               </div>

@@ -49,6 +49,7 @@ import {
 } from "react-share";
 
 function Product({ docId, id, title, brand, image, price, savedProp }) {
+  
   const history = useHistory();
 
   const firebase = require("firebase");
@@ -150,6 +151,9 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
   // console.log(getStarTotal(productRatings), productRatings.length);
 
   const addToBasket = async () => {
+    if (user) {
+      
+    
     const basketCollection = db
       .collection("users")
       .doc(user?.uid)
@@ -184,6 +188,19 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
         });
       })
       .catch(() => console.log("ADD TO BASKET FAILED"));
+    } else {
+      dispatch({
+        type: "ADD_TO_BASKET",
+        item: {
+          docId: docId,
+          id: id,
+          title: title,
+          image: image,
+          price: price,
+          rating: avgRating,
+        },
+      });
+    }
   };
 
   // IF PRODUCT IS SAVED CHANGE COLOR NOT DONE, NEED TO FIGURE OUT A CHECK TO TURN SAVED STATE TO TRUE
@@ -334,7 +351,7 @@ function Product({ docId, id, title, brand, image, price, savedProp }) {
             precision={0.5}
             readOnly
           />
-          <Tooltip title={"Share"} arrow interactive>
+          <Tooltip title={"Share"} arrow interactive placement="top">
             <IconButton aria-label="share" onClick={handleDialogClickOpen}>
               <Share className="text-blue-600" />
             </IconButton>

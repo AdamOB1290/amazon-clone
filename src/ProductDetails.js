@@ -195,40 +195,54 @@ function ProductDetails() {
   };
 
   const addToBasket = () => {
-    const basketCollection = db
-      .collection("users")
-      .doc(user?.uid)
-      .collection("basket");
+    if (user) {
+      const basketCollection = db
+        .collection("users")
+        .doc(user?.uid)
+        .collection("basket");
 
-    basketCollection
-      .doc(productId)
-      .set(
-        {
-          id: product?.id,
-          title: product?.title,
-          price: product?.price,
-          rating: avgRating,
-          image: product?.image,
-          quantity: firebase.firestore.FieldValue.increment(1),
-        },
-        { merge: true }
-      )
-      .then(() => {
-        console.log("ADD TO BASKET SUCCESS");
-        // dispatch the item into the data layer
-        dispatch({
-          type: "ADD_TO_BASKET",
-          item: {
-            docId: productId,
+      basketCollection
+        .doc(productId)
+        .set(
+          {
             id: product?.id,
             title: product?.title,
-            image: product?.image,
             price: product?.price,
             rating: avgRating,
+            image: product?.image,
+            quantity: firebase.firestore.FieldValue.increment(1),
           },
-        });
-      })
-      .catch(() => console.log("ADD TO BASKET FAILED"));
+          { merge: true }
+        )
+        .then(() => {
+          console.log("ADD TO BASKET SUCCESS");
+          // dispatch the item into the data layer
+          dispatch({
+            type: "ADD_TO_BASKET",
+            item: {
+              docId: productId,
+              id: product?.id,
+              title: product?.title,
+              image: product?.image,
+              price: product?.price,
+              rating: avgRating,
+            },
+          });
+        })
+        .catch(() => console.log("ADD TO BASKET FAILED"));
+    } else {
+      dispatch({
+        type: "ADD_TO_BASKET",
+        item: {
+          docId: productId,
+          id: product?.id,
+          title: product?.title,
+          image: product?.image,
+          price: product?.price,
+          rating: avgRating,
+        },
+      });
+    }
   };
 
   const updateRating = (productIdParam) => {

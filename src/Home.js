@@ -5,6 +5,7 @@ import Pagination from "./Pagination";
 import { db } from "./firebase";
 import { useStateValue } from "./StateProvider";
 import BannerCarousel from "./BannerCarousel";
+import FadeLoader from "react-spinners/FadeLoader";
 
 function Home() {
   const [{ user }] = useStateValue();
@@ -22,6 +23,10 @@ function Home() {
   };
   const [userFavoriteArray, setUserFavoriteArray] = useState([]);
   const [indexFavorite, setIndexFavorite] = useState([]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [user]);
 
   useEffect(() => {
     const updateFavoriteState = async () => {
@@ -74,6 +79,7 @@ function Home() {
     // Use an empty array as 2nd parameter of useEffect to make it execute on mount and unmount
     // thus avoiding an infinite loop
   }, [userFavoriteArray]);
+
   useEffect(() => {
     const updateFieldChanged = (arrIndex) => {
       let newArr = [...products]; // copying the old datas array
@@ -104,19 +110,34 @@ function Home() {
               millions of products with fast local delivery.
             </div>
           </div>
-            {currentProducts?.map((product, i) => (
-              <Product
-                key={i}
-                docId={product.id}
-                id={product.data.id}
-                title={product.data.title}
-                brand={product.data.brand}
-                price={product.data.price}
-                rating={product.data.rating}
-                image={product.data.image}
-                savedProp={product?.saved}
-              />
-            ))}
+          {!currentProducts.length > 0 ? (
+            <div className="mt-5 w-full bg-gray-400 animate-pulse h-64 bg-opacity-25 flex items-center justify-center">
+              <div className="sweet-loading opacity-100 bg-opacity-100">
+                <FadeLoader
+                  // css={override}
+                  // height={50}
+                  color={"#2196f3"}
+                  loading={true}
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              {currentProducts?.map((product, i) => (
+                <Product
+                  key={i}
+                  docId={product.id}
+                  id={product.data.id}
+                  title={product.data.title}
+                  brand={product.data.brand}
+                  price={product.data.price}
+                  rating={product.data.rating}
+                  image={product.data.image}
+                  savedProp={product?.saved}
+                />
+              ))}
+            </>
+          )}
         </div>
         <div className="w-full flex my-5">
           <Pagination

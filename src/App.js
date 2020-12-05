@@ -16,7 +16,9 @@ import { db } from "./firebase";
 import { Seeder } from "./Seeder";
 import Footer from "./Footer";
 
-const promise = loadStripe("****REMOVED****");
+const promise = loadStripe(
+  "****REMOVED****"
+);
 
 function App() {
   // const [username, setUsername] = useState();
@@ -67,7 +69,7 @@ function App() {
             <ProductDetails />
             <Footer />
           </Route>
-          <Route path="/orders">
+          <Route path="/orders/:param?">
             <Header />
             <Orders />
             <Footer />

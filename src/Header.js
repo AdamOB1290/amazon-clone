@@ -92,6 +92,39 @@ function Header() {
     }
 
     prevOpen.current = open;
+
+   if (user) { 
+     const keepBasket = async () => {
+      dispatch({
+        type: "EMPTY_BASKET",
+      });
+      const basketCollection = db
+        .collection("users")
+        .doc(user?.uid)
+        .collection("basket");
+      const snapshot = await basketCollection.get();
+      if (!snapshot.empty) {
+        snapshot.forEach((doc) => {
+          // console.log('basket fetch',doc, doc.data());
+          dispatch({
+            type: "ADD_TO_BASKET",
+            item: {
+              docId: doc.id,
+              id: doc.data().id,
+              title: doc.data().title,
+              image: doc.data().image,
+              price: doc.data().price,
+              rating: doc.data().rating,
+            },
+          });
+        });
+      }
+    }
+    if (basket?.length === 0) {
+      keepBasket()
+    }
+      
+    }
   }, [open, user]);
 
   products.forEach((product) => {
@@ -366,7 +399,7 @@ function Header() {
           <Link to={user ? "/" : "/login"}>
             <div onClick={handleAuthenticaton} className="header__option">
               <span className="header__optionLineOne">
-                Hello {!user ? "Guest" : username}
+                Hello <span className="capitalize">{!user ? "Guest" : username}</span>
               </span>
               <span className="header__optionLineTwo">
                 {user ? "Sign Out" : "Sign In"}

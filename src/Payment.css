@@ -41,6 +41,10 @@
   padding-bottom: 20px;
 }
 
+.payment__processing{
+  left: 144px;
+}
+
 @media (min-width: 640px) {
   .payment__section{
     flex-direction: row;

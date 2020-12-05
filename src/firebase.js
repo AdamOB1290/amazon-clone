@@ -6,10 +6,10 @@ const firebaseConfig = {
   authDomain: "****REMOVED****",
   databaseURL: "****REMOVED****",
   projectId: "****REMOVED****",
-  storageBucket: "****REMOVED****",
+  storageBucket: "clone-e5f47.appspot.com",
   messagingSenderId: "****REMOVED****",
   appId: "****REMOVED****",
-  measurementId: "****REMOVED****",
+  measurementId: "****REMOVED****"
 };
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
